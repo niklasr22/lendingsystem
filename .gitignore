@@ -1,0 +1,12 @@
+*.class
+*.log
+*.jar
+.idea/
+TEST*.xml
+.DS_Store
+Thumbs.db
+*.app
+*.exe
+*.war
+out/
+derbyDB/
