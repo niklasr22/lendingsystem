@@ -112,10 +112,6 @@ public class MainWindow extends JFrame {
             bottomButtonsBar.add(btnNewUser);
         }
 
-        Button btnUpgrade = new Button("Upgrade");
-        btnUpgrade.addActionListener(e -> new UpgradeDialog(this));
-        bottomButtonsBar.add(btnUpgrade);
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
