@@ -7,6 +7,8 @@ import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.List;
 import java.util.Vector;
@@ -31,8 +33,28 @@ public class CategoryDialog extends JDialog {
         JPanel categoryWrapper = new JPanel();
         categoryWrapper.setLayout(new BorderLayout());
 
+        JLabel articleDescriptionPropertyLabel = new JLabel("Artikel Bezeichnung*");
+        articleDescriptionPropertyLabel.setBackground(new Color(255, 255, 255));
+        articleDescriptionPropertyLabel.setOpaque(true);
+        articleDescriptionPropertyLabel.setFont(GuiUtils.FONT_MEDIUM);
+
+        GridBagLayout gbl = new GridBagLayout();
+        JPanel propertiesWrapper = new JPanel(gbl);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0f;
+        gbc.weighty = 0.0f;
+        propertiesWrapper.add(articleDescriptionPropertyLabel, gbc);
+
+        gbc.gridy = 2;
+        gbc.weighty = 1.0f;
         propertyList = new JList<>(properties);
-        JScrollPane propertiesScrollPane = new JScrollPane(propertyList);
+        propertyList.setFont(GuiUtils.FONT_MEDIUM);
+        propertiesWrapper.add(propertyList, gbc);
+
+        JScrollPane propertiesScrollPane = new JScrollPane(propertiesWrapper);
         categoryWrapper.add(propertiesScrollPane);
 
         JPanel addPropertyWrapper = new JPanel();
