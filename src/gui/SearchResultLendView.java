@@ -73,6 +73,7 @@ public class SearchResultLendView extends SearchResultView<Lend> {
         add(label, c);
 
         JPanel buttons = new JPanel(new GridLayout());
+        buttons.setOpaque(false);
 
         button = new JButton("Details");
         button.addActionListener(e -> new LendDetailsDialog(frame, getContent(), getActiveUser()));

@@ -43,11 +43,12 @@ public class SearchResultUserView extends SearchResultView<User> {
         c.gridx = 0;
         add(label, c);
 
-        JPanel panel = new JPanel(new GridLayout(1, 2));
+        JPanel buttons = new JPanel(new GridLayout(1, 2));
+        buttons.setOpaque(false);
 
         button = new JButton("Details");
         button.addActionListener(evt -> new UserDetailsDialog(frame, getContent(), getActiveUser()));
-        panel.add(button);
+        buttons.add(button);
 
         button = new JButton("Löschen");
         button.addActionListener(evt -> {
@@ -64,10 +65,10 @@ public class SearchResultUserView extends SearchResultView<User> {
             button.setEnabled(false);
             button.setToolTipText("Der aktuell eingeloggte Nutzer kann nicht gelöscht werden.");
         }
-        panel.add(button);
+        buttons.add(button);
 
         c.anchor = GridBagConstraints.LINE_END;
         c.gridx = 1;
-        add(panel, c);
+        add(buttons, c);
     }
 }
