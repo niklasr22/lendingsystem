@@ -13,6 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
+            System.setProperty("apple.awt.application.name", "Verleihsystem");
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
