@@ -46,7 +46,7 @@ public class PersonDetailsDialog extends JDialog {
         personAndLendsWrapper.add(personDataWrapper);
 
         JPanel lendsWrapper = new JPanel(new BorderLayout());
-        JLabel lendsLabel = new JLabel("aktuelle Leihen:");
+        JLabel lendsLabel = new JLabel("Leihen:");
         lendsLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
         lendsWrapper.add(lendsLabel, BorderLayout.NORTH);
         lendVector = new Vector<>();
