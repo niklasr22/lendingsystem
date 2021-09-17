@@ -35,7 +35,7 @@ public class SearchResultItemView extends SearchResultView<Item> {
         c.weighty = 0.0;
 
         label = new JLabel(getContent().getDescription());
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 2;
@@ -44,7 +44,7 @@ public class SearchResultItemView extends SearchResultView<Item> {
 
         label = new JLabel("#" + getContent().getInventoryNumber());
         label.setToolTipText("Inventarnummer");
-        label.setFont(GuiUtils.FONT_MEDIUM);
+        label.setFont(GuiUtils.FONT_M);
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 1;
@@ -52,13 +52,13 @@ public class SearchResultItemView extends SearchResultView<Item> {
         add(label, c);
 
         label = new JLabel();
-        label.setFont(GuiUtils.FONT_MEDIUM);
-        if (getContent().isLent()) {
+        label.setFont(GuiUtils.FONT_M);
+        if (!getContent().isAvailable()) {
             label.setText("Verliehen");
-            label.setForeground(new Color(237, 130, 7));
+            label.setForeground(GuiUtils.ORANGE);
         } else {
             label.setText("Verfügbar");
-            label.setForeground(new Color(27, 142, 22));
+            label.setForeground(GuiUtils.GREEN);
         }
         c.fill = GridBagConstraints.NONE;
         c.anchor = GridBagConstraints.LINE_START;
@@ -78,7 +78,6 @@ public class SearchResultItemView extends SearchResultView<Item> {
 
         button = new JButton("Verleihen");
         button.addActionListener(e -> new LendDialog(frame, getContent(), getActiveUser()));
-        button.setEnabled(!getContent().isLent());
         buttons.add(button, c);
 
         c.anchor = GridBagConstraints.LINE_END;

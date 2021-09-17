@@ -26,8 +26,9 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
             while (lends.next()) {
                 try {
                     String returnDate = lends.getString("return_date");
+                    Item associatedItem = itemsContainer.search(lends.getInt("item_id"));
                     Lend lend = new Lend(
-                            itemsContainer.search(lends.getInt("item_id")),
+                            associatedItem,
                             personsContainer.searchPerson(lends.getInt("person_id")),
                             LocalDate.parse(lends.getString("lend_date"), dtf),
                             LocalDate.parse(lends.getString("expected_return_date"), dtf),
@@ -35,8 +36,10 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
                             lends.getString("deposit"),
                             lends.getString("comment"),
                             LocalDateTime.parse(lends.getString("last_modified_date"), dtfWithTime),
-                            lends.getString("last_modified_by_user"));
+                            lends.getString("last_modified_by_user"),
+                            lends.getInt("status"));
                     lend.setId(lends.getInt("id"));
+                    associatedItem.linkLend(lend);
                     container.linkLendLoading(lend);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -52,15 +55,16 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern ("dd.MM.yyyy");
         DateTimeFormatter dtfWithTime = DateTimeFormatter.ofPattern ("dd.MM.yyyy HH:mm");
         try (PreparedStatement statement = DBConnection.getConnection().prepareStatement(
-                "INSERT INTO lends (item_id, deposit, comment, lend_date, expected_return_date, return_date, last_modified_date, last_modified_by_user, person_id) VALUES (?, ?, ?, ?, ?, null, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+                "INSERT INTO lends (item_id, deposit, comment, lend_date, expected_return_date, return_date, status, last_modified_date, last_modified_by_user, person_id) VALUES (?, ?, ?, ?, ?, null, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, element.getItem().getInventoryNumber());
             statement.setString(2, element.getDeposit());
             statement.setString(3, element.getComment());
             statement.setString(4, dtf.format(element.getLendDate()));
             statement.setString(5, dtf.format(element.getExpectedReturnDate()));
-            statement.setString(6, dtfWithTime.format(element.getLastModifiedDate()));
-            statement.setString(7, element.getLastModifiedByUser());
-            statement.setInt(8, element.getPerson().getId());
+            statement.setInt(6, element.getStatus());
+            statement.setString(7, dtfWithTime.format(element.getLastModifiedDate()));
+            statement.setString(8, element.getLastModifiedByUser());
+            statement.setInt(9, element.getPerson().getId());
             statement.executeUpdate();
 
             ResultSet resultSet = statement.getGeneratedKeys();
@@ -89,15 +93,16 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern ("dd.MM.yyyy");
         DateTimeFormatter dtfWithTime = DateTimeFormatter.ofPattern ("dd.MM.yyyy HH:mm");
         try (PreparedStatement statement = DBConnection.getConnection().prepareStatement(
-                "UPDATE lends SET deposit = ?, comment = ?, expected_return_date = ?, return_date = ?, last_modified_date = ?, last_modified_by_user = ?, person_id = ? WHERE id = ?")) {
+                "UPDATE lends SET deposit = ?, comment = ?, expected_return_date = ?, return_date = ?, status = ?, last_modified_date = ?, last_modified_by_user = ?, person_id = ? WHERE id = ?")) {
             statement.setString(1, element.getDeposit());
             statement.setString(2, element.getComment());
             statement.setString(3, dtf.format(element.getExpectedReturnDate()));
             statement.setString(4, element.isReturned() ? dtf.format(element.getReturnDate()) : null);
-            statement.setString(5, dtfWithTime.format(element.getLastModifiedDate()));
-            statement.setString(6, element.getLastModifiedByUser());
-            statement.setInt(7, element.getPerson().getId());
-            statement.setInt(8, element.getId());
+            statement.setInt(5, element.getStatus());
+            statement.setString(6, dtfWithTime.format(element.getLastModifiedDate()));
+            statement.setString(7, element.getLastModifiedByUser());
+            statement.setInt(8, element.getPerson().getId());
+            statement.setInt(9, element.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -116,6 +121,7 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
                     + " lend_date VARCHAR(10) NOT NULL,"
                     + " expected_return_date VARCHAR(10) NOT NULL,"
                     + " return_date VARCHAR(10),"
+                    + " status INTEGER NOT NULL,"
                     + " last_modified_date VARCHAR(16) NOT NULL,"
                     + " last_modified_by_user VARCHAR(40) NOT NULL,"
                     + " person_id INTEGER NOT NULL,"

@@ -26,6 +26,7 @@ public class LendDialog extends JDialog {
             textFieldPlannedReturnDate,
             textFieldComment,
             textFieldSearch;
+    private final JLabel availabiltyIndicator;
     private final JTabbedPane userTabbedPane;
     private final JList<Person> personsList;
     private final Item item;
@@ -88,10 +89,40 @@ public class LendDialog extends JDialog {
         constraints.gridheight = 1;
         panelSearchPerson.add(personsScrollPane, constraints);
 
+        KeyAdapter datesKeyListener = new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent event) {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                try {
+                    LocalDate lendDate = LocalDate.parse(textFieldLendDate.getText(), dtf);
+                    LocalDate expectedReturnDate = LocalDate.parse(textFieldPlannedReturnDate.getText(), dtf);
+                    if (lendDate.isBefore(expectedReturnDate) || lendDate.isEqual(expectedReturnDate)) {
+                        if (item.isAvailableFor(lendDate, expectedReturnDate)) {
+                            availabiltyIndicator.setText("Verfügbar");
+                            availabiltyIndicator.setForeground(new Color(27, 142, 22));
+                        } else {
+                            availabiltyIndicator.setText("Im gewählten Zeitraum nicht verfügbar");
+                            availabiltyIndicator.setForeground(Color.RED);
+                        }
+                    } else {
+                        availabiltyIndicator.setText("Das Rückgabedatum muss nach dem Verleihdatum liegen.");
+                        availabiltyIndicator.setForeground(Color.RED);
+                    }
+                } catch (DateTimeParseException ignored) {
+                    availabiltyIndicator.setText("Mindestens eines der beiden Daten ist ungültig.");
+                    availabiltyIndicator.setForeground(Color.RED);
+                }
+            }
+        };
+
         JPanel panelDateInputs = new JPanel(flowLayout);
         add(panelDateInputs);
         textFieldLendDate = GuiUtils.createNewInput(panelDateInputs, "Leihtermin (TT.MM.JJJJ)", "", 25, false);
+        textFieldLendDate.addKeyListener(datesKeyListener);
         textFieldPlannedReturnDate = GuiUtils.createNewInput(panelDateInputs, "Geplantes Rückgabedatum (TT.MM.JJJJ)", "", 25, false);
+        textFieldPlannedReturnDate.addKeyListener(datesKeyListener);
+        availabiltyIndicator = GuiUtils.createLabel(this, "", true);
+        availabiltyIndicator.setFont(GuiUtils.FONT_M);
         textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", "", 50, true);
         textFieldComment = GuiUtils.createNewInput(this, "Kommentar", "", 50, true);
 
@@ -127,7 +158,7 @@ public class LendDialog extends JDialog {
     }
 
     private void saveLend() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern ("dd.MM.yyyy");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         try {
             Person person = null;
             if (userTabbedPane.getSelectedIndex() == 0) {

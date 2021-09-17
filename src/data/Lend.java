@@ -1,19 +1,24 @@
 package data;
 
 import exceptions.IllegalInputException;
+import exceptions.LoadSaveException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Lend extends SearchResult {
+    public final static int RESERVED = 0;
+    public final static int PICKED_UP = 1;
+    public final static int PICKED_UP_EXPIRED = 2;
+    public final static int RETURNED = 3;
+
     private LocalDate lendDate;
     private LocalDate expectedReturnDate;
     private LocalDate returnDate;
     private Item item;
     private Person person;
     private String deposit, comment;
-    private int id;
-    private boolean returned;
+    private int id, status;
     private LocalDateTime lastModifiedDate;
     private String lastModifiedByUser;
 
@@ -27,6 +32,12 @@ public class Lend extends SearchResult {
         setComment(comment);
         setLastModifiedDate(lastModifiedDate);
         setLastModifiedByUser(lastModifiedByUser);
+        setStatus(RESERVED);
+    }
+
+    public Lend(Item item, Person person, LocalDate lendDate, LocalDate expectedReturnDate, LocalDate returnDate, String deposit, String comment, LocalDateTime lastModifiedDate, String lastModifiedByUser, int status) throws Exception{
+        this(item, person, lendDate, expectedReturnDate, returnDate, deposit, comment, lastModifiedDate, lastModifiedByUser);
+        setStatus(status);
     }
 
     private void setItem(Item item) {
@@ -51,13 +62,13 @@ public class Lend extends SearchResult {
         if (!checkReturnDate(returnDate))
             throw new IllegalInputException("Ungültiges Rückgabedatum");
         this.returnDate = returnDate;
-        returned = this.returnDate != null;
-        if (!returned) {
-            item.setLend(this);
-            returned = false;
-        } else if(item.getLend() == this) {
-            item.setLend(null);
-        }
+    }
+
+    public void returnItem() throws LoadSaveException, IllegalInputException {
+        setReturnDate(LocalDate.now());
+        setStatus(RETURNED);
+        getItem().setAvailable(true);
+        ItemsContainer.instance().modifyItem(getItem());
     }
 
     private boolean checkExpectedReturnDate(LocalDate expectedReturnDate) {
@@ -89,7 +100,13 @@ public class Lend extends SearchResult {
     }
 
     public boolean isReturned() {
-        return returned;
+        return status == RETURNED;
+    }
+
+    public void pickUpItem() throws LoadSaveException {
+        setStatus(PICKED_UP);
+        getItem().setAvailable(false);
+        ItemsContainer.instance().modifyItem(getItem());
     }
 
     public int getId() {
@@ -144,6 +161,27 @@ public class Lend extends SearchResult {
 
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    private void setStatus(int status) {
+        if (status == PICKED_UP && expectedReturnDate.isBefore(LocalDate.now()))
+            this.status = PICKED_UP_EXPIRED;
+        else
+            this.status = status;
+    }
+
+    public int getStatus() {
+        /*if (isReturned()) {
+            return RETURNED;
+        } else if (isPickedUp()) {
+            if (expectedReturnDate.isBefore(LocalDate.now()))
+                return PICKED_UP_EXPIRED;
+            else
+                return PICKED_UP;
+        } else {
+            return RESERVED;
+        }*/
+        return status;
     }
 
     @Override

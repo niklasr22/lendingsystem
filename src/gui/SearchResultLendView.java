@@ -23,6 +23,8 @@ public class SearchResultLendView extends SearchResultView<Lend> {
 
     @Override
     protected void createLayout() {
+        int lendStatus = getContent().getStatus();
+
         setBackground(Color.white);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -34,23 +36,47 @@ public class SearchResultLendView extends SearchResultView<Lend> {
         setLayout(gridBagLayout);
 
         GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.LINE_START;
         c.weightx = 0.0;
         c.weighty = 0.0;
         c.gridheight = 1;
 
         label = new JLabel("*" + getContent().getId() + ": " + getContent().getItem().getDescription() + "(#" + getContent().getItem().getInventoryNumber() + ")" + " " + getContent().getPerson().getName());
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 2;
         add(label, c);
 
+        label = new JLabel();
+        label.setHorizontalAlignment(SwingConstants.RIGHT);
+        label.setFont(GuiUtils.FONT_L);
+
+        switch (lendStatus) {
+            case Lend.RESERVED:
+                label.setText("Reserviert");
+                break;
+            case Lend.PICKED_UP:
+                label.setText("Abgeholt");
+                label.setForeground(GuiUtils.GREEN);
+                break;
+            case Lend.PICKED_UP_EXPIRED:
+                label.setText("Verspätet");
+                label.setForeground(Color.RED);
+                break;
+            case Lend.RETURNED:
+                label.setText("Abgeschlossen");
+        }
+
+        c.gridx = 2;
+        c.gridwidth = 1;
+        add(label, c);
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         label = new JLabel("Ab: " + dtf.format(getContent().getLendDate()));
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 1;
@@ -61,12 +87,12 @@ public class SearchResultLendView extends SearchResultView<Lend> {
             label.setText("Bis: " + dtf.format(getContent().getReturnDate()));
         } else {
             label.setText("Bis: " + dtf.format(getContent().getExpectedReturnDate()) + " (geplant)");
-            if (getContent().getExpectedReturnDate().isBefore(LocalDate.now()))
+            if (lendStatus == Lend.PICKED_UP_EXPIRED)
                 label.setForeground(Color.RED);
             else
-                label.setForeground(new Color(27, 142, 22));
+                label.setForeground(GuiUtils.GREEN);
         }
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 1;
         c.gridy = 1;
         c.gridwidth = 1;
@@ -79,7 +105,23 @@ public class SearchResultLendView extends SearchResultView<Lend> {
         button.addActionListener(e -> new LendDetailsDialog(frame, getContent(), getActiveUser()));
         buttons.add(button);
 
-        if (getContent().isReturned() || getContent().getLendDate().isAfter(LocalDate.now())) {
+        if (lendStatus == Lend.RESERVED) {
+            button = new JButton("Abholung");
+            button.addActionListener(evt -> {
+                int status = JOptionPane.showConfirmDialog(this, "Abholung bestätigen?");
+                if (status == JOptionPane.OK_OPTION) {
+                    try {
+                        getContent().pickUpItem();
+                        LendsContainer.instance().modifyLend(getContent());
+                    } catch (LoadSaveException e) {
+                        JOptionPane.showMessageDialog(this, e.getMessage());
+                    }
+                }
+            });
+            button.setEnabled(getContent().getItem().isAvailable() && !getContent().getLendDate().isAfter(LocalDate.now()));
+            buttons.add(button);
+        }
+        if (lendStatus == Lend.RETURNED || lendStatus == Lend.RESERVED) {
             button = new JButton("Löschen");
             button.addActionListener(evt -> {
                 int status = JOptionPane.showConfirmDialog(this, "Soll die Leihe aus der Historie gelöscht werden?");
@@ -91,27 +133,28 @@ public class SearchResultLendView extends SearchResultView<Lend> {
                     }
                 }
             });
-        } else {
+            buttons.add(button);
+        } else if (lendStatus == Lend.PICKED_UP || lendStatus == Lend.PICKED_UP_EXPIRED) {
             button = new JButton("Rückgabe");
             button.addActionListener(evt -> {
                 int status = JOptionPane.showConfirmDialog(this, "Rückgabe bestätigen?");
                 if (status == JOptionPane.OK_OPTION) {
                     try {
-                        getContent().setReturnDate(LocalDate.now());
+                        getContent().returnItem();
                         LendsContainer.instance().modifyLend(getContent());
-                    } catch (IllegalInputException | LoadSaveException e) {
+                    } catch (LoadSaveException | IllegalInputException e) {
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(this, e.getMessage());
                     }
                 }
             });
+            buttons.add(button);
         }
-        buttons.add(button);
 
-
-        c.gridx = 2;
-        c.gridwidth = 1;
-        c.gridheight = 2;
+        c.anchor = GridBagConstraints.LINE_END;
+        c.gridx = 1;
+        c.gridy = 2;
+        c.gridwidth = 2;
         add(buttons, c);
     }
 }

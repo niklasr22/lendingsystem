@@ -29,12 +29,12 @@ public class LoginWindow extends JFrame {
         } catch (LoadSaveException ignored) { }
 
         JLabel labelTitle = new JLabel("Login - Verleihsystem");
-        labelTitle.setFont(GuiUtils.FONT_LARGE);
+        labelTitle.setFont(GuiUtils.FONT_XL);
         labelTitle.setHorizontalAlignment(SwingConstants.CENTER);
         add(labelTitle);
 
         labelError = new JLabel("");
-        labelError.setFont(GuiUtils.FONT);
+        labelError.setFont(GuiUtils.FONT_L);
         labelError.setForeground(Color.RED);
         labelError.setHorizontalAlignment(SwingConstants.CENTER);
         add(labelError);

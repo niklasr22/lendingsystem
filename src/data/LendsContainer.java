@@ -49,7 +49,7 @@ public class LendsContainer extends Container implements Iterable<Lend> {
             if (!lend.isReturned() && !lend.getLendDate().isAfter(LocalDate.now()))
                 throw new LoadSaveException("Eine Leihe muss zurückgegeben werden, bevor sie gelöscht werden kann.", null);
             if (!lend.isReturned()) {
-                lend.getItem().setLend(null);
+                lend.getItem().unlinkLend(lend);
                 ItemsContainer.instance().modifyItem(lend.getItem());
             }
             store.delete(lend);

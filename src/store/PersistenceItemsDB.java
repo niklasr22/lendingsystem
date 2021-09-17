@@ -31,7 +31,8 @@ public class PersistenceItemsDB implements DataManagement<ItemsContainer, Item> 
                             items.getString("description"),
                             items.getInt("id"),
                             LocalDateTime.parse(items.getString("last_modified_date"), dtf),
-                            items.getString("last_modified_by_user"));
+                            items.getString("last_modified_by_user"),
+                            items.getBoolean("available"));
 
                     String commandProperties = "SELECT name, property_value FROM items_properties, categories_properties WHERE items_properties.item_id = ? and items_properties.property_id = categories_properties.id";
                     PreparedStatement preparedStatement = DBConnection.getConnection().prepareStatement(commandProperties);
@@ -60,12 +61,13 @@ public class PersistenceItemsDB implements DataManagement<ItemsContainer, Item> 
         try {
             Connection connection = DBConnection.getConnection();
 
-            String command = "INSERT INTO items (description, category_id, last_modified_date, last_modified_by_user) VALUES (?, ?, ?, ?)";
+            String command = "INSERT INTO items (description, category_id, available, last_modified_date, last_modified_by_user) VALUES (?, ?, ?, ?, ?)";
             statement = connection.prepareStatement(command, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, element.getDescription());
             statement.setInt(2, element.getCategory().getId());
-            statement.setString(3, dtf.format(element.getLastModifiedDate()));
-            statement.setString(4, element.getLastModifiedByUser());
+            statement.setBoolean(3, element.isAvailable());
+            statement.setString(4, dtf.format(element.getLastModifiedDate()));
+            statement.setString(5, element.getLastModifiedByUser());
             statement.executeUpdate();
 
             ResultSet resultSet = statement.getGeneratedKeys();
@@ -131,12 +133,13 @@ public class PersistenceItemsDB implements DataManagement<ItemsContainer, Item> 
         try {
             Connection connection = DBConnection.getConnection();
 
-            String command = "UPDATE items SET description = ?, last_modified_date = ?, last_modified_by_user = ? WHERE id = ?";
+            String command = "UPDATE items SET description = ?, last_modified_date = ?, last_modified_by_user = ?, available = ? WHERE id = ?";
             statement = connection.prepareStatement(command);
             statement.setString(1, element.getDescription());
             statement.setString(2, dtf.format(element.getLastModifiedDate()));
             statement.setString(3, element.getLastModifiedByUser());
-            statement.setInt(4, element.getInventoryNumber());
+            statement.setBoolean(4, element.isAvailable());
+            statement.setInt(5, element.getInventoryNumber());
             statement.executeUpdate();
 
             statement.close();
@@ -171,6 +174,7 @@ public class PersistenceItemsDB implements DataManagement<ItemsContainer, Item> 
                     + "id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) ,"
                     + " description VARCHAR (80) NOT NULL,"
                     + " category_id INTEGER NOT NULL,"
+                    + " available BOOLEAN NOT NULL,"
                     + " last_modified_date VARCHAR(16) NOT NULL, "
                     + " last_modified_by_user VARCHAR(40) NOT NULL, "
                     + " PRIMARY KEY (id), "

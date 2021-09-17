@@ -5,14 +5,17 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class GuiUtils {
-    public final static Font FONT = new Font("Helvetica", Font.PLAIN, 16);
-    public final static Font FONT_LARGE = new Font("Helvetica", Font.PLAIN, 26);
-    public final static Font FONT_MEDIUM = new Font("Helvetica", Font.PLAIN, 14);
-    public final static Font FONT_SMALL = new Font("Helvetica", Font.PLAIN, 12);
+    public final static Font FONT_XL = new Font("Helvetica", Font.PLAIN, 26);
+    public final static Font FONT_L = new Font("Helvetica", Font.PLAIN, 16);
+    public final static Font FONT_M = new Font("Helvetica", Font.PLAIN, 14);
+    public final static Font FONT_S = new Font("Helvetica", Font.PLAIN, 12);
+
+    public final static Color GREEN = new Color(27, 142, 22);
+    public final static Color ORANGE = new Color(237, 130, 7);
 
     public static JLabel createLabel(Container parent, String text, boolean createFrame) {
         JLabel label = new JLabel(text);
-        label.setFont(FONT);
+        label.setFont(FONT_L);
         if (createFrame) {
             GridBagLayout layout = new GridBagLayout();
             layout.columnWeights = new double[] { 1.0 };
@@ -36,7 +39,7 @@ public class GuiUtils {
         TextField textField = new TextField(value);
         textField.setPlaceholder(placeholder);
         textField.setColumns(columns);
-        textField.setFont(FONT);
+        textField.setFont(FONT_L);
         if (createFrame) {
             GridBagLayout layout = new GridBagLayout();
             layout.columnWeights = new double[] { 1.0 };
@@ -62,7 +65,7 @@ public class GuiUtils {
         PasswordField passwordField = new PasswordField(value);
         passwordField.setPlaceholder(placeholder);
         passwordField.setColumns(columns);
-        passwordField.setFont(FONT);
+        passwordField.setFont(FONT_L);
         if (createFrame) {
             GridBagLayout layout = new GridBagLayout();
             layout.columnWeights = new double[] { 1.0 };

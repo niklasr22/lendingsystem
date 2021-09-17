@@ -40,15 +40,16 @@ public class SearchResultPersonView extends SearchResultView<Person> {
         c.gridy = 0;
 
         label = new JLabel(getContent().getName() + " (" + getContent().getEmail() + ")");
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 0;
         add(label, c);
 
-        JPanel panel = new JPanel(new GridLayout(1, 2));
+        JPanel buttons = new JPanel(new GridLayout(1, 2));
+        buttons.setOpaque(false);
 
         button = new JButton("Details");
         button.addActionListener(evt -> new PersonDetailsDialog(frame, getContent(), getActiveUser()));
-        panel.add(button);
+        buttons.add(button);
 
         button = new JButton("Löschen");
         button.addActionListener(evt -> {
@@ -61,10 +62,10 @@ public class SearchResultPersonView extends SearchResultView<Person> {
                 }
             }
         });
-        panel.add(button);
+        buttons.add(button);
 
         c.anchor = GridBagConstraints.LINE_END;
         c.gridx = 1;
-        add(panel, c);
+        add(buttons, c);
     }
 }

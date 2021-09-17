@@ -2,7 +2,9 @@ package data;
 
 import exceptions.IllegalInputException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Item extends SearchResult {
@@ -11,12 +13,15 @@ public class Item extends SearchResult {
     private Category category;
     private String description;
     private Lend lend;
+    private final ArrayList<Lend> lends;
     private LocalDateTime lastModified;
     private String lastModifiedByUser;
+    private boolean available = true;
 
     public Item(Category category) {
         setCategory(category);
         properties = new HashMap<>();
+        lends = new ArrayList<>();
     }
 
     public Item(Category category, String description, LocalDateTime lastModified, String lastModifiedByUser) throws IllegalInputException {
@@ -25,6 +30,7 @@ public class Item extends SearchResult {
         setLastModifiedDate(lastModified);
         setLastModifiedByUser(lastModifiedByUser);
         properties = new HashMap<>();
+        lends = new ArrayList<>();
     }
 
     public Item(Category category, String description, int inventoryNumber) throws IllegalInputException {
@@ -32,15 +38,14 @@ public class Item extends SearchResult {
         setDescription(description);
         setInventoryNumber(inventoryNumber);
         properties = new HashMap<>();
+        lends = new ArrayList<>();
     }
 
-    public Item(Category category, String description, int invertoryNumber, LocalDateTime lastModified, String lastModifiedByUser) throws IllegalInputException {
-        setCategory(category);
-        setDescription(description);
-        setInventoryNumber(invertoryNumber);
-        properties = new HashMap<>();
+    public Item(Category category, String description, int inventoryNumber, LocalDateTime lastModified, String lastModifiedByUser, boolean available) throws IllegalInputException {
+        this(category, description, inventoryNumber);
         setLastModifiedDate(lastModified);
         setLastModifiedByUser(lastModifiedByUser);
+        setAvailable(available);
     }
 
     public String getDescription() {
@@ -78,12 +83,45 @@ public class Item extends SearchResult {
         return lend != null;
     }
 
-    public void setLend(Lend lend) {
-        this.lend = lend;
+    public boolean isAvailable() {
+        return available;
     }
 
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    // TODO: aktive leihe zurückgeben
     public Lend getLend() {
         return lend;
+    }
+
+    public void linkLend(Lend lend) {
+        if (!lends.contains(lend))
+            lends.add(lend);
+    }
+
+    public void unlinkLend(Lend lend) {
+        lends.remove(lend);
+    }
+
+    public boolean isAvailableFor(LocalDate start, LocalDate end) {
+        for (Lend l : lends) {
+            if (l.getStatus() == Lend.RETURNED)
+                continue;
+            LocalDate lendDate = l.getLendDate();
+            LocalDate returnDate = l.getExpectedReturnDate();
+            if (lendDate.isEqual(start) ||
+                    lendDate.isEqual(end) ||
+                    returnDate.isEqual(start) ||
+                    returnDate.isEqual(end) ||
+                    (start.isAfter(lendDate) && start.isBefore(returnDate)) ||
+                    (end.isAfter(lendDate) && end.isBefore(returnDate)) ||
+                    (lendDate.isAfter(start) && lendDate.isBefore(end)) ||
+                    (returnDate.isAfter(start) && returnDate.isBefore(end)))
+                return false;
+        }
+        return true;
     }
 
     public void addProperty(String propertyName, String value) {

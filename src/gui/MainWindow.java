@@ -45,7 +45,7 @@ public class MainWindow extends JFrame {
         textFieldSearch = new TextField();
         textFieldSearch.setPlaceholder("Suche");
         textFieldSearch.setColumns(50);
-        textFieldSearch.setFont(GuiUtils.FONT);
+        textFieldSearch.setFont(GuiUtils.FONT_L);
         textFieldSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {

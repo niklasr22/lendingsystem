@@ -39,7 +39,7 @@ public class SearchResultUserView extends SearchResultView<User> {
         c.gridy = 0;
 
         label = new JLabel(getContent().getName());
-        label.setFont(GuiUtils.FONT);
+        label.setFont(GuiUtils.FONT_L);
         c.gridx = 0;
         add(label, c);
 

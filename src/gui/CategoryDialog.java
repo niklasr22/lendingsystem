@@ -7,8 +7,6 @@ import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.List;
 import java.util.Vector;
@@ -36,7 +34,7 @@ public class CategoryDialog extends JDialog {
         JLabel articleDescriptionPropertyLabel = new JLabel("Artikel Bezeichnung*");
         articleDescriptionPropertyLabel.setBackground(new Color(255, 255, 255));
         articleDescriptionPropertyLabel.setOpaque(true);
-        articleDescriptionPropertyLabel.setFont(GuiUtils.FONT_MEDIUM);
+        articleDescriptionPropertyLabel.setFont(GuiUtils.FONT_M);
 
         GridBagLayout gbl = new GridBagLayout();
         JPanel propertiesWrapper = new JPanel(gbl);
@@ -51,7 +49,7 @@ public class CategoryDialog extends JDialog {
         gbc.gridy = 2;
         gbc.weighty = 1.0f;
         propertyList = new JList<>(properties);
-        propertyList.setFont(GuiUtils.FONT_MEDIUM);
+        propertyList.setFont(GuiUtils.FONT_M);
         propertiesWrapper.add(propertyList, gbc);
 
         JScrollPane propertiesScrollPane = new JScrollPane(propertiesWrapper);
