@@ -3,6 +3,7 @@ package gui;
 import data.*;
 import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
+import org.apache.derby.client.am.DateTime;
 import store.DBConnection;
 
 import javax.swing.*;
@@ -10,6 +11,9 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -216,6 +220,12 @@ public class MainWindow extends JFrame {
             @Override
             public List<? extends SearchResult> search(String search) throws LoadSaveException {
                 String searchLC = search.toLowerCase();
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                LocalDate _date = null;
+                try {
+                    _date = LocalDate.parse(searchLC.trim(), dtf);
+                } catch (DateTimeParseException ignored) {}
+                final LocalDate date = _date;
                 return LendsContainer
                         .instance()
                         .getLends()
@@ -227,7 +237,10 @@ public class MainWindow extends JFrame {
                                         || ("*" + l.getId()).contains(searchLC)
                                         || l.getPerson().getEmail().toLowerCase().contains(searchLC)
                                         || l.getPerson().getName().toLowerCase().contains(searchLC)
-                                        || l.getItem().getDescription().toLowerCase().contains(searchLC)))
+                                        || l.getItem().getDescription().toLowerCase().contains(searchLC)
+                                        || (date != null && !date.isAfter(l.getExpectedReturnDate()) && !date.isBefore(l.getLendDate()))
+                                )
+                        )
                         .sorted(lendComparator)
                         .collect(Collectors.toList());
             }
