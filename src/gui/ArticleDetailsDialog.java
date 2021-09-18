@@ -83,6 +83,7 @@ public class ArticleDetailsDialog extends JDialog {
         GuiUtils.createLabel(infoPanel, "Zuletzt bearbeitet von " + item.getLastModifiedByUser() + " am " + item.getLastModifiedDate().format(dtf), true);
 
         add(infoPanel);
+        add(new CalendarPanel());
         add(buttonsPanel);
         pack();
         setMaximumSize(new Dimension(500, 500));
