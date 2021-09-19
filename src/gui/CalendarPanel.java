@@ -96,7 +96,7 @@ public class CalendarPanel extends JPanel {
 
         LocalDate date = LocalDate.of(year, month, 1);
 
-        monthLabel.setText(date.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+        monthLabel.setText(date.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) + ", " + currentYear);
 
         int previousMonth = month - 1;
         int previousMonthYear = year;
