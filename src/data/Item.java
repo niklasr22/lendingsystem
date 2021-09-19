@@ -96,6 +96,10 @@ public class Item extends SearchResult {
         return lend;
     }
 
+    public ArrayList<Lend> getLends() {
+        return lends;
+    }
+
     public void linkLend(Lend lend) {
         if (!lends.contains(lend))
             lends.add(lend);

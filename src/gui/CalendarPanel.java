@@ -1,20 +1,26 @@
 package gui;
 
+import data.CalendarEvent;
+
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class CalendarPanel extends JPanel {
 
     private final JLabel monthLabel;
     private final JPanel daysPanel;
+    private final ArrayList<CalendarEvent> events;
 
     private int currentYear, currentMonth;
 
     public CalendarPanel() {
         super();
+        events = new ArrayList<>();
+
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -36,6 +42,7 @@ public class CalendarPanel extends JPanel {
         gbc.weightx = 1.0f;
 
         monthLabel = new JLabel("September");
+        monthLabel.setFont(GuiUtils.FONT_L);
         add(monthLabel, gbc);
 
         gbc.gridx = 2;
@@ -70,6 +77,10 @@ public class CalendarPanel extends JPanel {
         return label;
     }
 
+    public void showMonth(LocalDate date) {
+        showMonth(date.getYear(), date.getMonthValue());
+    }
+
     public void showMonth(int year, int month) {
         currentMonth = month;
         currentYear = year;
@@ -94,15 +105,23 @@ public class CalendarPanel extends JPanel {
             previousMonth = 12;
         }
 
+        int nextMonth = month + 1;
+        int nextYear = year;
+        if (nextMonth == 13) {
+            nextMonth = 1;
+            nextYear++;
+        }
+
         LocalDate previousMonthDate = LocalDate.of(previousMonthYear, previousMonth, 1);
         int previousMonthDayCount = previousMonthDate.getMonth().length(previousMonthDate.isLeapYear());
 
         int dayOfWeek = date.getDayOfWeek().getValue();
-        System.out.println(dayOfWeek + " " + previousMonthDayCount);
         int day = 1;
         boolean previousMonthDays = false;
         if (dayOfWeek != 1) {
             day = previousMonthDayCount - dayOfWeek + 2;
+            year = previousMonthYear;
+            month = previousMonth;
             previousMonthDays = true;
         }
 
@@ -110,15 +129,45 @@ public class CalendarPanel extends JPanel {
 
         for (int r = 0; r < 5; r++) {
             for (int c = 0; c < 7; c++) {
-                daysPanel.add(new JLabel(String.valueOf(day), SwingConstants.CENTER));
+                JLabel dayLabel = new JLabel(String.valueOf(day), SwingConstants.CENTER);
+                dayLabel.setOpaque(true);
+                LocalDate dayDate = LocalDate.of(year, month, day);
+                if (isEventOnDate(dayDate))
+                    dayLabel.setBackground(Color.RED);
+                if (dayDate.isEqual(LocalDate.now()))
+                    dayLabel.setForeground(Color.BLUE);
+                daysPanel.add(dayLabel);
                 day++;
                 if (previousMonthDays && day > previousMonthDayCount) {
                     previousMonthDays = false;
                     day = 1;
+                    year = currentYear;
+                    month = currentMonth;
                 }
-                if (!previousMonthDays && day > dayCount)
+                if (!previousMonthDays && day > dayCount) {
                     day = 1;
+                    year = nextYear;
+                    month = nextMonth;
+                }
             }
         }
+    }
+
+    public boolean isEventOnDate(LocalDate date) {
+        for (CalendarEvent e : events) {
+            if (!date.isBefore(e.getStartDate()) && !date.isAfter(e.getEndDate())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void linkEvent(CalendarEvent event) {
+        if (!events.contains(event))
+            events.add(event);
+    }
+
+    public void linkEvents(ArrayList<CalendarEvent> events) {
+        this.events.addAll(events);
     }
 }

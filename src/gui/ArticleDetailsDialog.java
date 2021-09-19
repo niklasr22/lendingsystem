@@ -1,16 +1,15 @@
 package gui;
 
-import data.Item;
-import data.ItemsContainer;
-import data.Property;
-import data.User;
+import data.*;
 import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class ArticleDetailsDialog extends JDialog {
@@ -83,7 +82,12 @@ public class ArticleDetailsDialog extends JDialog {
         GuiUtils.createLabel(infoPanel, "Zuletzt bearbeitet von " + item.getLastModifiedByUser() + " am " + item.getLastModifiedDate().format(dtf), true);
 
         add(infoPanel);
-        add(new CalendarPanel());
+
+        CalendarPanel calendarPanel = new CalendarPanel();
+        add(calendarPanel);
+        calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
+        calendarPanel.showMonth(LocalDate.now());
+
         add(buttonsPanel);
         pack();
         setMaximumSize(new Dimension(500, 500));

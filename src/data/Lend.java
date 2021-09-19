@@ -6,7 +6,7 @@ import exceptions.LoadSaveException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class Lend extends SearchResult {
+public class Lend extends SearchResult implements CalendarEvent {
     public final static int RESERVED = 0;
     public final static int PICKED_UP = 1;
     public final static int PICKED_UP_EXPIRED = 2;
@@ -171,21 +171,21 @@ public class Lend extends SearchResult {
     }
 
     public int getStatus() {
-        /*if (isReturned()) {
-            return RETURNED;
-        } else if (isPickedUp()) {
-            if (expectedReturnDate.isBefore(LocalDate.now()))
-                return PICKED_UP_EXPIRED;
-            else
-                return PICKED_UP;
-        } else {
-            return RESERVED;
-        }*/
         return status;
     }
 
     @Override
     public String toString() {
         return "*" + getId() + ": " + getItem().getDescription();
+    }
+
+    @Override
+    public LocalDate getStartDate() {
+        return getLendDate();
+    }
+
+    @Override
+    public LocalDate getEndDate() {
+        return getStatus() == RETURNED ? getReturnDate() : getExpectedReturnDate();
     }
 }
