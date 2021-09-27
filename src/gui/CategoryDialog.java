@@ -31,10 +31,9 @@ public class CategoryDialog extends JDialog {
         JPanel categoryWrapper = new JPanel();
         categoryWrapper.setLayout(new BorderLayout());
 
-        JLabel articleDescriptionPropertyLabel = new JLabel("Artikel Bezeichnung*");
-        articleDescriptionPropertyLabel.setBackground(new Color(255, 255, 255));
-        articleDescriptionPropertyLabel.setOpaque(true);
-        articleDescriptionPropertyLabel.setFont(GuiUtils.FONT_M);
+        JList<String> articleDescriptionPropertyList = new JList<>(new String[] {"Artikel Bezeichnung*"});
+        articleDescriptionPropertyList.setEnabled(false);
+        articleDescriptionPropertyList.setFont(GuiUtils.FONT_M);
 
         GridBagLayout gbl = new GridBagLayout();
         JPanel propertiesWrapper = new JPanel(gbl);
@@ -44,7 +43,7 @@ public class CategoryDialog extends JDialog {
         gbc.gridy = 1;
         gbc.weightx = 1.0f;
         gbc.weighty = 0.0f;
-        propertiesWrapper.add(articleDescriptionPropertyLabel, gbc);
+        propertiesWrapper.add(articleDescriptionPropertyList, gbc);
 
         gbc.gridy = 2;
         gbc.weighty = 1.0f;
