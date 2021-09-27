@@ -39,7 +39,6 @@ public class PersistenceLendsDB implements DataManagement<LendsContainer, Lend> 
                             lends.getString("last_modified_by_user"),
                             lends.getInt("status"));
                     lend.setId(lends.getInt("id"));
-                    associatedItem.linkLend(lend);
                     container.linkLendLoading(lend);
                 } catch (Exception e) {
                     e.printStackTrace();

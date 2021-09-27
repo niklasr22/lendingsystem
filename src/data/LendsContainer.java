@@ -34,6 +34,7 @@ public class LendsContainer extends Container implements Iterable<Lend> {
         if (lends.contains(lend))
             throw new IllegalInputException("Leihe bereits vorhanden");
         lends.add(lend);
+        lend.getItem().linkLend(lend);
         return true;
     }
 
