@@ -248,4 +248,12 @@ public class CalendarPanel extends JPanel {
     public void linkEvents(ArrayList<CalendarEvent> events) {
         this.events.addAll(events);
     }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
 }
