@@ -13,13 +13,19 @@ public class CalendarPanel extends JPanel {
 
     private final JLabel monthLabel;
     private final JPanel daysPanel;
+    private ArrayList<DayButton> visibleDays;
     private final ArrayList<CalendarEvent> events;
+    private final boolean readonly;
+    private LocalDate startDate = null;
+    private LocalDate endDate = null;
 
     private int currentYear, currentMonth;
 
-    public CalendarPanel() {
+    public CalendarPanel(boolean readonly) {
         super();
+        this.readonly = readonly;
         events = new ArrayList<>();
+        visibleDays = new ArrayList<>();
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -84,6 +90,7 @@ public class CalendarPanel extends JPanel {
     public void showMonth(int year, int month) {
         currentMonth = month;
         currentYear = year;
+        visibleDays.clear();
 
         daysPanel.removeAll();
         daysPanel.add(getBoldLabel("Mo"));
@@ -129,14 +136,20 @@ public class CalendarPanel extends JPanel {
 
         for (int r = 0; r < 5; r++) {
             for (int c = 0; c < 7; c++) {
-                JLabel dayLabel = new JLabel(String.valueOf(day), SwingConstants.CENTER);
-                dayLabel.setOpaque(true);
                 LocalDate dayDate = LocalDate.of(year, month, day);
+                DayButton dayButton = new DayButton(String.valueOf(day), dayDate);
+                dayButton.setOpaque(true);
+                if (!readonly && !dayButton.getDate().isBefore(LocalDate.now())) {
+                    dayButton.addActionListener(e -> {
+                        setStartAndEndDate(dayButton.getDate());
+                        markSelectedDays();
+                    });
+                }
                 if (isEventOnDate(dayDate))
-                    dayLabel.setBackground(Color.RED);
+                    dayButton.setBackground(Color.RED);
                 if (dayDate.isEqual(LocalDate.now()))
-                    dayLabel.setForeground(Color.BLUE);
-                daysPanel.add(dayLabel);
+                    dayButton.setForeground(Color.BLUE);
+                daysPanel.add(dayButton);
                 day++;
                 if (previousMonthDays && day > previousMonthDayCount) {
                     previousMonthDays = false;
@@ -149,6 +162,71 @@ public class CalendarPanel extends JPanel {
                     year = nextYear;
                     month = nextMonth;
                 }
+                visibleDays.add(dayButton);
+            }
+        }
+        markSelectedDays();
+    }
+
+    private void setStartAndEndDate(LocalDate date) {
+        if (startDate == null && !isEventOnDate(date)) {
+            startDate = date;
+        } else if (startDate != null && endDate == null && date.isEqual(startDate)) {
+            startDate = null;
+        } else if (startDate != null && endDate != null && date.isEqual(startDate)) {
+            startDate = endDate;
+            endDate = null;
+        } else if (endDate != null && date.isEqual(endDate)) {
+            endDate = null;
+        } else if (startDate != null && date.isAfter(startDate)) {
+            if (!isEventInBetween(startDate, date)) {
+                endDate = date;
+            } else {
+                JOptionPane.showMessageDialog(this, "In dem ausgewählten Zeitraum ist der Artikel bereits reserviert");
+            }
+        } else if (startDate != null && date.isBefore(startDate)) {
+            if (!isEventInBetween(startDate, date)) {
+                if (endDate == null)
+                    endDate = startDate;
+                startDate = date;
+            } else {
+                JOptionPane.showMessageDialog(this, "In dem ausgewählten Zeitraum ist der Artikel bereits reserviert");
+            }
+        }
+    }
+
+    private boolean isEventInBetween(LocalDate date1, LocalDate date2) {
+        LocalDate first, second;
+        if (date1.isBefore(date2)) {
+            first = date1;
+            second = date2;
+        } else {
+            first = date2;
+            second = date1;
+        }
+        while (!first.isEqual(second.plusDays(1))) {
+            if (isEventOnDate(first))
+                return true;
+            first = first.plusDays(1);
+        }
+        return false;
+    }
+
+    private void markSelectedDays() {
+        for (DayButton day : visibleDays) {
+            LocalDate date = day.getDate();
+            if (startDate != null && endDate != null) {
+                if (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))
+                    day.setSelected(true);
+                else if (!isEventOnDate(date))
+                    day.setSelected(false);
+            } else if (endDate == null && startDate != null) {
+                if (date.isEqual(startDate))
+                    day.setSelected(true);
+                else if (!isEventOnDate(date))
+                    day.setSelected(false);
+            } else if (!isEventOnDate(date)) {
+                day.setSelected(false);
             }
         }
     }
