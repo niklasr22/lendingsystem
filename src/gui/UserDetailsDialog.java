@@ -19,24 +19,18 @@ public class UserDetailsDialog extends JDialog {
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         this.user = user;
 
-        JPanel form = new JPanel();
-        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        JPanel form = new JPanel(new GridLayout(0, 1));
         form.setBorder(new EmptyBorder(0, 5, 10, 5));
 
-        GuiUtils.createLabel(form, "Benutzerkennung:", true);
-        TextField usernameInput = GuiUtils.createNewInput(form, "Benutzerkennung", user.getUsername(), 30, true);
+        GuiUtils.createLabel(form, "Benutzerkennung:", GuiUtils.FONT_M, true);
+        TextField usernameInput = GuiUtils.createNewInput(form, "Benutzerkennung", user.getUsername(), true);
         usernameInput.setEnabled(false);
-        GuiUtils.createLabel(form, "Name:", true);
-        nameInput = GuiUtils.createNewInput(form, "Name", user.getName(), 30, true);
-        passwordInput = GuiUtils.createNewPasswordInput(form, "Neues Passwort", "", 30, true);
-        passwordConfirmInput = GuiUtils.createNewPasswordInput(form, "Neues Passwort bestätigen", "", 30, true);
+        GuiUtils.createLabel(form, "Name:", GuiUtils.FONT_M, true);
+        nameInput = GuiUtils.createNewInput(form, "Name", user.getName(), true);
+        passwordInput = GuiUtils.createNewPasswordInput(form, "Neues Passwort", "", true);
+        passwordConfirmInput = GuiUtils.createNewPasswordInput(form, "Neues Passwort bestätigen", "", true);
 
         JPanel buttons = new JPanel();
-        JButton saveButton = new JButton("Speichern");
-        JButton cancelButton = new JButton("Abbrechen");
-
-        cancelButton.addActionListener(e -> dispose());
-        saveButton.addActionListener(e -> saveUser());
 
         isAdminCheckBox = new JCheckBox("Adminrechte", user.isAdmin());
         if (user == activeUser) {
@@ -45,7 +39,12 @@ public class UserDetailsDialog extends JDialog {
         }
         buttons.add(isAdminCheckBox);
 
+        JButton saveButton = new JButton("Speichern");
+        saveButton.addActionListener(e -> saveUser());
         buttons.add(saveButton);
+
+        JButton cancelButton = new JButton("Abbrechen");
+        cancelButton.addActionListener(e -> dispose());
         buttons.add(cancelButton);
 
         add(form);

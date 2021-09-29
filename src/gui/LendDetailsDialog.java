@@ -59,15 +59,15 @@ public class LendDetailsDialog extends JDialog {
 
 
         GuiUtils.createLabel(this, "Pfand:", true);
-        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", lend.getDeposit(), 50, true);
+        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", lend.getDeposit(), true);
         textFieldDeposit.setEnabled(isLent);
 
         GuiUtils.createLabel(this, "Geplantes Rückgabedatum:", true);
-        textFieldPlannedReturnDate = GuiUtils.createNewInput(this, "Geplantes Rückgabedatum (TT.MM.JJJJ)", dtf.format(lend.getExpectedReturnDate()), 25, true);
+        textFieldPlannedReturnDate = GuiUtils.createNewInput(this, "Geplantes Rückgabedatum (TT.MM.JJJJ)", dtf.format(lend.getExpectedReturnDate()), true);
         textFieldPlannedReturnDate.setEnabled(isLent);
 
         GuiUtils.createLabel(this, "Kommentar:", true);
-        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", lend.getComment(), 50, true);
+        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", lend.getComment(), true);
 
         DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
         GuiUtils.createLabel(this, "Letzte Bearbeitung von " + lend.getLastModifiedByUser() + " am " + dtf2.format(lend.getLastModifiedDate()) , true);

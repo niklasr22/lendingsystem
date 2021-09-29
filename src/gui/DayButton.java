@@ -4,16 +4,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 
-public class DayButton {
-    private LocalDate date;
-    private JLabel label;
+public class DayButton extends JLabel {
+    private final LocalDate date;
 
-    public DayButton(Container parent, String text, LocalDate date) {
-        label = GuiUtils.createLabel(parent, text, false);
+    public DayButton(String text, LocalDate date) {
+        super(text);
         this.date = date;
-        label.setForeground(Color.BLACK);
-        label.setPreferredSize(new Dimension(40, 40));
-        label.setHorizontalAlignment(SwingConstants.CENTER);
+        setForeground(Color.BLACK);
+        setPreferredSize(new Dimension(40, 40));
+        setFont(GuiUtils.FONT_M);
+        setHorizontalAlignment(SwingConstants.CENTER);
+        setOpaque(true);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     public LocalDate getDate() {
@@ -21,14 +23,9 @@ public class DayButton {
     }
 
     public void setSelected(boolean selected) {
-        if (selected) {
-            label.setBackground(GuiUtils.GREEN);
-        } else {
-            label.setBackground(GuiUtils.LIGHT_GREY);
-        }
-    }
-
-    public JLabel getLabel() {
-        return label;
+        if (selected)
+            setBackground(GuiUtils.GREEN);
+        else
+            setBackground(GuiUtils.LIGHT_GREY);
     }
 }

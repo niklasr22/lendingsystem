@@ -24,10 +24,10 @@ public class UserDialog extends JDialog {
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
         form.setBorder(new EmptyBorder(0, 5, 10, 5));
 
-        idInput = GuiUtils.createNewInput(form, "Benutzerkennung", "", 30, true);
-        nameInput = GuiUtils.createNewInput(form, "Name, Vorname", "", 30, true);
-        passwordInput = GuiUtils.createNewPasswordInput(form, "Passwort", "", 30, true);
-        passwordConfirmInput = GuiUtils.createNewPasswordInput(form, "Passwort bestätigen", "", 30, true);
+        idInput = GuiUtils.createNewInput(form, "Benutzerkennung", "", true);
+        nameInput = GuiUtils.createNewInput(form, "Name, Vorname", "", true);
+        passwordInput = GuiUtils.createNewPasswordInput(form, "Passwort", "", true);
+        passwordConfirmInput = GuiUtils.createNewPasswordInput(form, "Passwort bestätigen", "", true);
 
         JPanel buttons = new JPanel();
         JButton saveButton = new JButton("Speichern");

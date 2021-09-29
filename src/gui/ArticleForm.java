@@ -5,45 +5,63 @@ import data.Item;
 import data.Property;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.util.HashMap;
 
 public class ArticleForm extends JPanel {
 
     private TextField inputDescription;
-    private HashMap<Property, TextField> properties;
+    private final HashMap<Property, TextField> properties;
+    private final GridBagConstraints gridBagConstraints;
 
     private ArticleForm() {
         super();
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new EmptyBorder(0, 5, 10, 5));
+        setLayout(new GridBagLayout());
+        properties = new HashMap<>();
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
     }
 
     public ArticleForm(Category category) {
         this();
 
-        inputDescription = GuiUtils.createNewInput(this, "Artikel Bezeichnung*", "", 30, true);
+        inputDescription = GuiUtils.createNewInput(this, "Artikel Bezeichnung*", "", true);
+        add(inputDescription, gridBagConstraints);
+        gridBagConstraints.gridy++;
 
-        properties = new HashMap<>();
         for (Property property : category.getProperties()) {
-            properties.put(property, GuiUtils.createNewInput(this, property.getDescription() + (property.isRequired() ? "*" : ""), "", 30, true));
+            TextField field = GuiUtils.createNewInput(this, property.getDescription() + (property.isRequired() ? "*" : ""), "", true);
+            add(field, gridBagConstraints);
+            gridBagConstraints.gridy++;
+            properties.put(property, field);
         }
     }
 
     public ArticleForm(Item item) {
         this();
 
-        TextField inventoryNumber = GuiUtils.createNewInput(this, "Inventarnummer", "#" + item.getInventoryNumber(), 30, true);
+        TextField inventoryNumber = GuiUtils.createNewInput(null, "Inventarnummer", "#" + item.getInventoryNumber(), true);
         inventoryNumber.setEnabled(false);
         inventoryNumber.setToolTipText("Inventarnummer");
+        add(inventoryNumber, gridBagConstraints);
+        gridBagConstraints.gridy++;
 
-        GuiUtils.createLabel(this, "Artikel Bezeichnung:", true);
-        inputDescription = GuiUtils.createNewInput(this, "Artikel Bezeichnung*", item.getDescription(), 30, true);
+        add(GuiUtils.createLabel(null, "Artikel Bezeichnung:", GuiUtils.FONT_M, true), gridBagConstraints);
+        gridBagConstraints.gridy++;
 
-        properties = new HashMap<>();
+        inputDescription = GuiUtils.createNewInput(null, "Artikel Bezeichnung*", item.getDescription(), true);
+        add(inputDescription, gridBagConstraints);
+
         for (Property property : item.getCategory().getProperties()) {
-            GuiUtils.createLabel(this, property.getDescription() + ":", true);
-            properties.put(property, GuiUtils.createNewInput(this, property.getDescription() + (property.isRequired() ? "*" : ""), item.getProperty(property.getDescription()), 30, true));
+            add(GuiUtils.createLabel(null, property.getDescription() + ":", GuiUtils.FONT_M, true), gridBagConstraints);
+            gridBagConstraints.gridy++;
+            TextField field = GuiUtils.createNewInput(null, property.getDescription() + (property.isRequired() ? "*" : ""), item.getProperty(property.getDescription()), true);
+            add(field, gridBagConstraints);
+            gridBagConstraints.gridy++;
+            properties.put(property, field);
         }
     }
 

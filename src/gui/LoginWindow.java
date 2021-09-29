@@ -39,8 +39,8 @@ public class LoginWindow extends JFrame {
         labelError.setHorizontalAlignment(SwingConstants.CENTER);
         add(labelError);
 
-        textFieldUsername = GuiUtils.createNewInput(this, "Benutzername", "", 50, true);
-        passwordField = GuiUtils.createNewPasswordInput(this, "Passwort", "", 50, true);
+        textFieldUsername = GuiUtils.createNewInput(this, "Benutzername", "", true);
+        passwordField = GuiUtils.createNewPasswordInput(this, "Passwort", "", true);
         passwordField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {

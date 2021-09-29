@@ -16,16 +16,16 @@ public class CalendarPanel extends JPanel {
 
     private final JLabel monthLabel;
     private final JPanel daysPanel;
-    private ArrayList<DayButton> visibleDays;
+    private final ArrayList<DayButton> visibleDays;
     private final ArrayList<CalendarEvent> events;
     private final boolean readonly;
     private LocalDate startDate = null;
     private LocalDate endDate = null;
     private int currentYear, currentMonth;
-    private JDialog dialog;
-    private JFrame mainWindow;
-    private User user;
-    private Item item;
+    private final JDialog dialog;
+    private final JFrame mainWindow;
+    private final User user;
+    private final Item item;
 
     public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, boolean readonly) {
         super();
@@ -147,10 +147,10 @@ public class CalendarPanel extends JPanel {
         for (int r = 0; r < 5; r++) {
             for (int c = 0; c < 7; c++) {
                 LocalDate dayDate = LocalDate.of(year, month, day);
-                DayButton dayButton = new DayButton(daysPanel, String.valueOf(day), dayDate);
-                dayButton.getLabel().setOpaque(true);
+                DayButton dayButton = new DayButton(String.valueOf(day), dayDate);
+                daysPanel.add(dayButton);
                 if (!readonly && !dayButton.getDate().isBefore(LocalDate.now())) {
-                    dayButton.getLabel().addMouseListener(new MouseAdapter() {
+                    dayButton.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
                             setStartAndEndDate(dayDate);
@@ -159,7 +159,7 @@ public class CalendarPanel extends JPanel {
                     });
                 }
                 if (readonly && isEventOnDate(dayButton.getDate())) {
-                    dayButton.getLabel().addMouseListener(new MouseAdapter() {
+                    dayButton.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent event) {
                             try {
@@ -177,9 +177,9 @@ public class CalendarPanel extends JPanel {
                     });
                 }
                 if (isEventOnDate(dayDate))
-                    dayButton.getLabel().setBackground(GuiUtils.RESERVED);
+                    dayButton.setBackground(GuiUtils.RESERVED);
                 if (dayDate.isEqual(LocalDate.now()))
-                    dayButton.getLabel().setForeground(GuiUtils.BLUE);
+                    dayButton.setForeground(GuiUtils.BLUE);
                 day++;
                 if (previousMonthDays && day > previousMonthDayCount) {
                     previousMonthDays = false;

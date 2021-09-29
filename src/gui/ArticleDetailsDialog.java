@@ -1,10 +1,14 @@
 package gui;
 
-import data.*;
+import data.Item;
+import data.ItemsContainer;
+import data.Property;
+import data.User;
 import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,11 +29,27 @@ public class ArticleDetailsDialog extends JDialog {
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-        JPanel formWrapper = new JPanel();
         articleForm = new ArticleForm(item);
-        formWrapper.add(articleForm);
+        JScrollPane formScrollPane = new JScrollPane(articleForm, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        JScrollPane formScrollPane = new JScrollPane(formWrapper, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(formScrollPane);
+
+        CalendarPanel calendarPanel = new CalendarPanel(this, parent, user, item, true);
+        calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
+        add(calendarPanel);
+        calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
+        calendarPanel.showMonth(LocalDate.now());
+
+        JPanel infoPanel = new JPanel(new GridLayout(0, 1));
+
+        if (item.isAvailable())
+            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell verfügbar.", true).setForeground(GuiUtils.GREEN);
+        else
+            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell nicht verfügbar.", true).setForeground(GuiUtils.ORANGE);
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        GuiUtils.createLabel(infoPanel, "Zuletzt bearbeitet von " + item.getLastModifiedByUser() + " am " + item.getLastModifiedDate().format(dtf), true);
+        add(infoPanel);
 
         JPanel buttonsPanel = new JPanel();
 
@@ -60,37 +80,9 @@ public class ArticleDetailsDialog extends JDialog {
         cancelButton.addActionListener(e -> dispose());
         buttonsPanel.add(cancelButton);
 
-        add(formScrollPane);
-
-        JPanel infoPanel = new JPanel(new GridLayout(0, 1));
-
-        if (item.isLent()) {
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            GuiUtils.createLabel(panel, "Dieser Artikel ist aktuell verliehen.", true);
-            JButton openLendButton = new JButton("Leihe anzeigen");
-            openLendButton.addActionListener(evt -> {
-                dispose();
-                new LendDetailsDialog(parent, item.getLend(), user);
-            });
-            panel.add(openLendButton);
-            infoPanel.add(panel);
-        } else {
-            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell nicht verliehen.", true);
-        }
-
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-        GuiUtils.createLabel(infoPanel, "Zuletzt bearbeitet von " + item.getLastModifiedByUser() + " am " + item.getLastModifiedDate().format(dtf), true);
-
-        add(infoPanel);
-
-        CalendarPanel calendarPanel = new CalendarPanel(this, parent, user, item, true);
-        add(calendarPanel);
-        calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
-        calendarPanel.showMonth(LocalDate.now());
-
         add(buttonsPanel);
+
         pack();
-        setMaximumSize(new Dimension(500, 500));
         setResizable(false);
         setVisible(true);
     }

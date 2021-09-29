@@ -24,8 +24,8 @@ public class CategoryDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         properties = new Vector<>();
 
-        JPanel nameWrapper = new JPanel();
-        textFieldName = GuiUtils.createNewInput(nameWrapper, "Kategoriename", "", 30, true);
+        JPanel nameWrapper = new JPanel(new BorderLayout());
+        textFieldName = GuiUtils.createNewInput(nameWrapper, "Kategoriename", "", true);
         add(nameWrapper, BorderLayout.NORTH);
 
         JPanel categoryWrapper = new JPanel();
@@ -56,7 +56,7 @@ public class CategoryDialog extends JDialog {
 
         JPanel addPropertyWrapper = new JPanel();
         addPropertyWrapper.setLayout(new GridLayout(2, 2));
-        propertyName = GuiUtils.createNewInput(addPropertyWrapper, "neue Eigenschaft", "", 30, true);
+        propertyName = GuiUtils.createNewInput(addPropertyWrapper, "Neue Eigenschaft", "", true);
 
         requiredBox = new JCheckBox("Pflichtfeld");
         addPropertyWrapper.add(requiredBox);
@@ -78,15 +78,19 @@ public class CategoryDialog extends JDialog {
         add(categoryWrapper, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel();
+
         Button saveButton = new Button("Speichern");
-        Button cancelButton = new Button("Abbrechen");
-        cancelButton.addActionListener(e -> dispose());
         saveButton.addActionListener(e -> this.saveCategory());
         buttons.add(saveButton);
+
+        Button cancelButton = new Button("Abbrechen");
+        cancelButton.addActionListener(e -> dispose());
         buttons.add(cancelButton);
+
         add(buttons, BorderLayout.SOUTH);
 
         add(categoryWrapper);
+
         setSize(1000, 800);
         setVisible(true);
     }

@@ -15,76 +15,44 @@ public class GuiUtils {
     public final static Color RESERVED = new Color(255, 128, 128);
     public final static Color BLUE = new Color(0, 72, 186);
     public final static Color LIGHT_GREY = new Color(230, 230, 230);
+    public final static Color DEFAULT_BACKGROUND = UIManager.getColor("Panel.background");
 
-    public static JLabel createLabel(Container parent, String text, boolean createFrame) {
+
+    public static JLabel createLabel(Container parent, String text, boolean addBorder) {
+        return createLabel(parent, text, FONT_L, addBorder);
+    }
+
+    public static JLabel createLabel(Container parent, String text, Font font, boolean addBorder) {
         JLabel label = new JLabel(text);
-        label.setFont(FONT_L);
-        if (createFrame) {
-            GridBagLayout layout = new GridBagLayout();
-            layout.columnWeights = new double[] { 1.0 };
-
-            JPanel panel = new JPanel(layout);
-            panel.setBorder(new EmptyBorder(5, 5, 0, 5));
-            parent.add(panel);
-
-            panel.add(label);
-
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.fill = GridBagConstraints.HORIZONTAL;
-            layout.setConstraints(label, constraints);
-        } else {
+        label.setFont(font);
+        if (addBorder)
+            label.setBorder(new EmptyBorder(5, 5, 0, 5));
+        if (parent != null)
             parent.add(label);
-        }
         return label;
     }
 
-    public static TextField createNewInput(Container parent, String placeholder, String value, int columns, boolean createFrame) {
+    public static TextField createNewInput(Container parent, String placeholder, String value, boolean addBorder) {
         TextField textField = new TextField(value);
         textField.setPlaceholder(placeholder);
-        textField.setColumns(columns);
         textField.setFont(FONT_L);
-        if (createFrame) {
-            GridBagLayout layout = new GridBagLayout();
-            layout.columnWeights = new double[] { 1.0 };
 
-            JPanel panel = new JPanel(layout);
-            panel.setBorder(new EmptyBorder(5, 5, 5, 5));
-            if (parent != null)
-                parent.add(panel);
-
-            panel.add(textField);
-
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.fill = GridBagConstraints.HORIZONTAL;
-            layout.setConstraints(textField, constraints);
-        } else {
-            if (parent != null)
-                parent.add(textField);
-        }
+        if (addBorder)
+            textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(DEFAULT_BACKGROUND, 5), textField.getBorder()));
+        if (parent != null)
+            parent.add(textField);
         return textField;
     }
 
-    public static PasswordField createNewPasswordInput(Container parent, String placeholder, String value, int columns, boolean createFrame) {
+    public static PasswordField createNewPasswordInput(Container parent, String placeholder, String value, boolean addBorder) {
         PasswordField passwordField = new PasswordField(value);
         passwordField.setPlaceholder(placeholder);
-        passwordField.setColumns(columns);
         passwordField.setFont(FONT_L);
-        if (createFrame) {
-            GridBagLayout layout = new GridBagLayout();
-            layout.columnWeights = new double[] { 1.0 };
 
-            JPanel panel = new JPanel(layout);
-            panel.setBorder(new EmptyBorder(5, 5, 5, 5));
-            parent.add(panel);
-
-            panel.add(passwordField);
-
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.fill = GridBagConstraints.HORIZONTAL;
-            layout.setConstraints(passwordField, constraints);
-        } else {
+        if (addBorder)
+            passwordField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(DEFAULT_BACKGROUND, 5), passwordField.getBorder()));
+        if (parent != null)
             parent.add(passwordField);
-        }
         return passwordField;
     }
 }

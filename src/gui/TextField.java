@@ -46,7 +46,9 @@ public class TextField extends JTextField {
 
             FontMetrics fontMetrics = g.getFontMetrics(getFont());
             graphics2D.setColor(getPlaceholderForeground());
-            graphics2D.drawString(getPlaceholder(), getInsets().left, getInsets().top + fontMetrics.getMaxAscent());
+            float fh = fontMetrics.getAscent() - fontMetrics.getDescent() - fontMetrics.getLeading();
+
+            graphics2D.drawString(getPlaceholder(), getInsets().left, getHeight() / 2 + (int) fh / 2);
         }
     }
 }

@@ -3,6 +3,7 @@ package gui;
 import data.*;
 import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -10,14 +11,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Vector;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class PersonDetailsDialog extends JDialog {
-    private final TextField nameTextField, addressTextField, phoneNumberTextField, emailTextField;
+    private final TextField firstnameTextField, lastnameTextField, addressTextField, phoneNumberTextField, emailTextField;
     private final Person person;
     private final User user;
-    private final Vector<Lend> lendVector;
-    private final JList<Lend> lendList;
+    private final JList<Lend> lendJList;
 
     public PersonDetailsDialog(JFrame parent, Person person, User user) {
         super(parent, "Person bearbeiten");
@@ -27,42 +28,97 @@ public class PersonDetailsDialog extends JDialog {
 
         JPanel personAndLendsWrapper = new JPanel(new GridLayout(0, 2));
 
-        JPanel personDataWrapper = new JPanel(new GridLayout(0, 1));
-        GuiUtils.createLabel(personDataWrapper, "Name:", true);
-        nameTextField = GuiUtils.createNewInput(personDataWrapper, "Name", person.getName(), 30, true);
+        JPanel personDataWrapper = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        GuiUtils.createLabel(personDataWrapper, "Adresse:", true);
-        addressTextField = GuiUtils.createNewInput(personDataWrapper, "Adresse", person.getAddress(), 30, true);
+        personDataWrapper.add(GuiUtils.createLabel(personDataWrapper, "Vorname:", GuiUtils.FONT_M, true), gbc);
 
-        GuiUtils.createLabel(personDataWrapper, "Telefonnummer:", true);
-        phoneNumberTextField = GuiUtils.createNewInput(personDataWrapper, "Telefonnummer", person.getPhoneNumber(), 30, true);
+        gbc.gridx = 1;
+        personDataWrapper.add(GuiUtils.createLabel(personDataWrapper, "Nachname:", GuiUtils.FONT_M, true), gbc);
 
-        GuiUtils.createLabel(personDataWrapper, "Email Adresse:", true);
-        emailTextField = GuiUtils.createNewInput(personDataWrapper, "Email Adresse", person.getEmail(), 30, true);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        firstnameTextField = GuiUtils.createNewInput(null, "Vorname", person.getFirstName(), true);
+        personDataWrapper.add(firstnameTextField, gbc);
 
+        gbc.gridx = 1;
+        lastnameTextField = GuiUtils.createNewInput(null, "Nachname", person.getLastName(), true);
+        personDataWrapper.add(lastnameTextField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        personDataWrapper.add(GuiUtils.createLabel(null, "Adresse:", GuiUtils.FONT_M, true), gbc);
+
+        gbc.gridy = 3;
+        addressTextField = GuiUtils.createNewInput(null, "Adresse", person.getAddress(), true);
+        personDataWrapper.add(addressTextField, gbc);
+
+        gbc.gridy = 4;
+        personDataWrapper.add(GuiUtils.createLabel(null, "Telefonnummer:", GuiUtils.FONT_M, true), gbc);
+
+        gbc.gridy = 5;
+        phoneNumberTextField = GuiUtils.createNewInput(null, "Telefonnummer", person.getPhoneNumber(), true);
+        personDataWrapper.add(phoneNumberTextField, gbc);
+
+        gbc.gridy = 6;
+        personDataWrapper.add(GuiUtils.createLabel(null, "Email Adresse:", GuiUtils.FONT_M, true), gbc);
+
+        gbc.gridy = 7;
+        emailTextField = GuiUtils.createNewInput(null, "Email Adresse", person.getEmail(), true);
+        personDataWrapper.add(emailTextField, gbc);
+
+        gbc.gridy = 8;
         DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-        GuiUtils.createLabel(personDataWrapper, "Letzte Bearbeitung von " + person.getLastModifiedByUser() + " am " + dtf2.format(person.getLastModifiedDate()) , true);
+        personDataWrapper.add(GuiUtils.createLabel(null, "Letzte Bearbeitung von " + person.getLastModifiedByUser() + " am " + dtf2.format(person.getLastModifiedDate()) , true), gbc);
 
         personAndLendsWrapper.add(personDataWrapper);
 
-        JPanel lendsWrapper = new JPanel(new BorderLayout());
-        JLabel lendsLabel = new JLabel("Leihen:");
-        lendsLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        lendsWrapper.add(lendsLabel, BorderLayout.NORTH);
-        lendVector = new Vector<>();
-        lendList = new JList<>(lendVector);
 
-        lendList.addMouseListener(new MouseAdapter() {
+        JPanel lendsWrapper = new JPanel(new BorderLayout());
+
+        JPanel lendsTopBar = new JPanel(new GridLayout(1, 2));
+        lendsWrapper.add(lendsTopBar, BorderLayout.NORTH);
+
+        GuiUtils.createLabel(lendsTopBar, "Leihen:", false);
+
+        JComboBox<String> lendsFilter = new JComboBox<>(new String[] {"Alle", "Aktiv", "Abgeschlossen", "Reserviert"});
+        lendsFilter.setBorder(new EmptyBorder(5, 5, 5, 5));
+        lendsFilter.setAlignmentX(SwingConstants.RIGHT);
+        lendsFilter.addItemListener(e -> {
+            Predicate<Lend> filter = null;
+            switch (lendsFilter.getSelectedIndex()) {
+                case 1:
+                    filter = lend -> lend.getStatus() == Lend.PICKED_UP || lend.getStatus() == Lend.PICKED_UP_EXPIRED;
+                    break;
+                case 2:
+                    filter = lend -> lend.getStatus() == Lend.RETURNED;
+                    break;
+                case 3:
+                    filter = lend -> lend.getStatus() == Lend.RESERVED;
+                    break;
+            }
+            loadPersonLends(filter);
+        });
+        lendsTopBar.add(lendsFilter);
+
+        lendJList = new JList<>();
+        lendJList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    int index = lendList.locationToIndex(e.getPoint());
                     dispose();
-                    new LendDetailsDialog(parent, lendVector.get(index), user);
+                    new LendDetailsDialog(parent, lendJList.getSelectedValue(), user);
                 }
             }
         });
-        JScrollPane lendScrollPane = new JScrollPane(lendList);
-        getPersonLends();
+
+        JScrollPane lendScrollPane = new JScrollPane(lendJList);
+        loadPersonLends(null);
         lendsWrapper.add(lendScrollPane);
         personAndLendsWrapper.add(lendsWrapper);
 
@@ -83,12 +139,11 @@ public class PersonDetailsDialog extends JDialog {
     }
 
     private void savePerson() {
-        String[] name = nameTextField.getText().split(" ");
         this.person.setLastModifiedDate(LocalDateTime.now());
         this.person.setLastModifiedByUser(this.user.getUsername());
         try {
-            this.person.setFirstName(name[0]);
-            this.person.setLastName(name[1]);
+            this.person.setFirstName(firstnameTextField.getText());
+            this.person.setLastName(lastnameTextField.getText());
             this.person.setAddress(addressTextField.getText());
             this.person.setEmail(emailTextField.getText());
             this.person.setPhoneNumber(phoneNumberTextField.getText());
@@ -99,13 +154,13 @@ public class PersonDetailsDialog extends JDialog {
         dispose();
     }
 
-    private void getPersonLends() {
+    private void loadPersonLends(Predicate<Lend> filter) {
         try {
-            for (Lend lend : LendsContainer.instance().getLends()) {
-                if (lend.getPerson() == this.person) {
-                    lendVector.add(lend);
-                }
-            }
+            Stream<Lend> s = LendsContainer.instance().getLends().stream().filter(l -> l.getPerson() == this.person);
+            if (filter != null)
+                s = s.filter(filter);
+            lendJList.setListData(s.toArray(Lend[]::new));
+            lendJList.updateUI();
         } catch (LoadSaveException e) {
             e.printStackTrace();
         }

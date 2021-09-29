@@ -176,7 +176,24 @@ public class Lend extends SearchResult implements CalendarEvent {
 
     @Override
     public String toString() {
-        return "*" + getId() + ": " + getItem().getDescription();
+        String status;
+        switch (getStatus()) {
+            case RETURNED:
+                status = "abgeschlossen";
+                break;
+            case RESERVED:
+                status = "reserviert";
+                break;
+            case PICKED_UP_EXPIRED:
+                status = "verspätete Rückgabe";
+                break;
+            case PICKED_UP:
+                status = "laufend";
+                break;
+            default:
+                status = "";
+        }
+        return "*" + getId() + ": " + getItem().getDescription() + " (" + status + ")";
     }
 
     @Override

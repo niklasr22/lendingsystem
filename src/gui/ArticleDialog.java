@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class ArticleDialog extends JDialog implements ItemListener {
-    private final JPanel formWrapper = new JPanel();
     private Category placeholderCategory, selectedCategory = null;
+    private JPanel formWrapper;
     private JComboBox<Category> categorySelector;
     private JButton saveButton;
     private ArticleForm articleForm = null;
     private JSpinner numberSelector;
-    private User activeUser;
+    private final User activeUser;
 
     public ArticleDialog(JFrame parent, User activeUser) {
         super(parent, "Artikel hinzufügen", true);
@@ -45,11 +45,12 @@ public class ArticleDialog extends JDialog implements ItemListener {
             return;
         }
 
+        formWrapper = new JPanel(new BorderLayout());
+
         categorySelector = new JComboBox<>(categories.toArray(new Category[] {}));
         categorySelector.addItemListener(this);
 
         JScrollPane formScrollPane = new JScrollPane(formWrapper, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
         JPanel buttonsAndNumberSelector = new JPanel();
 
         JLabel numberSelectorLabel = new JLabel("Kopien:");
@@ -114,7 +115,7 @@ public class ArticleDialog extends JDialog implements ItemListener {
             selectedCategory = (Category) categorySelector.getSelectedItem();
             if (selectedCategory != null && selectedCategory != placeholderCategory) {
                 articleForm = new ArticleForm(selectedCategory);
-                formWrapper.add(articleForm);
+                formWrapper.add(articleForm, BorderLayout.NORTH);
                 saveButton.setEnabled(true);
             } else {
                 saveButton.setEnabled(false);

@@ -10,8 +10,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 public class LendDialog extends JDialog {
@@ -39,8 +37,6 @@ public class LendDialog extends JDialog {
         this.item = item;
         this.user = user;
 
-        FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
-
         JPanel panelNewPerson = new JPanel(new GridLayout(0, 1));
         JPanel panelSearchPerson = new JPanel(new GridBagLayout());
         panelSearchPerson.setBorder(new EmptyBorder(5, 10, 5, 10));
@@ -50,14 +46,14 @@ public class LendDialog extends JDialog {
         userTabbedPane.addTab("Person suchen", panelSearchPerson);
         add(userTabbedPane);
 
-        JPanel panelNames = new JPanel(flowLayout);
+        JPanel panelNames = new JPanel(new GridLayout());
         panelNewPerson.add(panelNames);
 
-        textFieldFirstName = GuiUtils.createNewInput(panelNames, "Vorname", "", 15, false);
-        textFieldLastName = GuiUtils.createNewInput(panelNames, "Nachname", "", 15, false);
-        textFieldAddress = GuiUtils.createNewInput(panelNewPerson, "Adresse", "", 30, true);
-        textFieldPhone = GuiUtils.createNewInput(panelNewPerson, "Telefonnummer", "", 30, true);
-        textFieldMail = GuiUtils.createNewInput(panelNewPerson, "E-Mail", "", 30, true);
+        textFieldFirstName = GuiUtils.createNewInput(panelNames, "Vorname", "", true);
+        textFieldLastName = GuiUtils.createNewInput(panelNames, "Nachname", "", true);
+        textFieldAddress = GuiUtils.createNewInput(panelNewPerson, "Adresse", "", true);
+        textFieldPhone = GuiUtils.createNewInput(panelNewPerson, "Telefonnummer", "", true);
+        textFieldMail = GuiUtils.createNewInput(panelNewPerson, "E-Mail", "", true);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -69,7 +65,7 @@ public class LendDialog extends JDialog {
         constraints.gridheight = 1;
 
         personsList = new JList<>();
-        textFieldSearch = GuiUtils.createNewInput(null, "Suche (Name/Email)", "", 30, false);
+        textFieldSearch = GuiUtils.createNewInput(null, "Suche (Name/Email)", "", false);
         textFieldSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -89,11 +85,12 @@ public class LendDialog extends JDialog {
         panelSearchPerson.add(personsScrollPane, constraints);
 
         calendarPanel = new CalendarPanel(this, parent, user, item, false);
+        calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
         add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
         calendarPanel.showMonth(LocalDate.now());
-        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", "", 30, true);
-        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", "", 30, true);
+        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", "", true);
+        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", "", true);
 
         JPanel panelButtons = new JPanel(new FlowLayout());
         add(panelButtons);
