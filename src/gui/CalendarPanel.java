@@ -1,6 +1,7 @@
 package gui;
 
-import data.CalendarEvent;
+import data.*;
+import exceptions.LoadSaveException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,11 +21,18 @@ public class CalendarPanel extends JPanel {
     private final boolean readonly;
     private LocalDate startDate = null;
     private LocalDate endDate = null;
-
     private int currentYear, currentMonth;
+    private JDialog dialog;
+    private JFrame mainWindow;
+    private User user;
+    private Item item;
 
-    public CalendarPanel(boolean readonly) {
+    public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, boolean readonly) {
         super();
+        this.dialog = dialog;
+        this.mainWindow = mainWindow;
+        this.user = user;
+        this.item = item;
         this.readonly = readonly;
         events = new ArrayList<>();
         visibleDays = new ArrayList<>();
@@ -147,6 +155,24 @@ public class CalendarPanel extends JPanel {
                         public void mouseClicked(MouseEvent e) {
                             setStartAndEndDate(dayDate);
                             markSelectedDays();
+                        }
+                    });
+                }
+                if (readonly && isEventOnDate(dayButton.getDate())) {
+                    dayButton.getLabel().addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent event) {
+                            try {
+                                LendsContainer container = LendsContainer.instance();
+                                for (Lend lend : container.getLends()) {
+                                    if (lend.getItem() == item && (dayButton.getDate().isEqual(lend.getStartDate()) || dayButton.getDate().isEqual(lend.getEndDate()) || (dayButton.getDate().isBefore(lend.getEndDate()) && dayButton.getDate().isAfter(lend.getStartDate())))) {
+                                        dialog.dispose();
+                                        new LendDetailsDialog(mainWindow, lend, user);
+                                    }
+                                }
+                            } catch (LoadSaveException e) {
+                                JOptionPane.showMessageDialog(dialog, "Leihe konnte nicht geladen werden: " + e.getMessage());
+                            }
                         }
                     });
                 }

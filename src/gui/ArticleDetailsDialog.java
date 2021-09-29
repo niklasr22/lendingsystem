@@ -83,7 +83,7 @@ public class ArticleDetailsDialog extends JDialog {
 
         add(infoPanel);
 
-        CalendarPanel calendarPanel = new CalendarPanel(true);
+        CalendarPanel calendarPanel = new CalendarPanel(this, parent, user, item, true);
         add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
         calendarPanel.showMonth(LocalDate.now());
@@ -127,5 +127,4 @@ public class ArticleDetailsDialog extends JDialog {
         }
         dispose();
     }
-
 }
