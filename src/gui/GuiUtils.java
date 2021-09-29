@@ -12,6 +12,9 @@ public class GuiUtils {
 
     public final static Color GREEN = new Color(27, 142, 22);
     public final static Color ORANGE = new Color(237, 130, 7);
+    public final static Color RESERVED = new Color(255, 128, 128);
+    public final static Color BLUE = new Color(0, 72, 186);
+    public final static Color LIGHT_GREY = new Color(230, 230, 230);
 
     public static JLabel createLabel(Container parent, String text, boolean createFrame) {
         JLabel label = new JLabel(text);

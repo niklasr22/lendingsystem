@@ -1,15 +1,19 @@
 package gui;
 
+import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 
-public class DayButton extends Button {
+public class DayButton {
     private LocalDate date;
+    private JLabel label;
 
-    public DayButton(String text, LocalDate date) {
-        super(text);
+    public DayButton(Container parent, String text, LocalDate date) {
+        label = GuiUtils.createLabel(parent, text, false);
         this.date = date;
-        this.setBackground(Color.WHITE);
+        label.setForeground(Color.BLACK);
+        label.setPreferredSize(new Dimension(40, 40));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     public LocalDate getDate() {
@@ -18,9 +22,13 @@ public class DayButton extends Button {
 
     public void setSelected(boolean selected) {
         if (selected) {
-            this.setBackground(Color.GREEN);
+            label.setBackground(GuiUtils.GREEN);
         } else {
-            this.setBackground(Color.WHITE);
+            label.setBackground(GuiUtils.LIGHT_GREY);
         }
+    }
+
+    public JLabel getLabel() {
+        return label;
     }
 }

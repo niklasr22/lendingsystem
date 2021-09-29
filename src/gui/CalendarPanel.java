@@ -4,6 +4,8 @@ import data.CalendarEvent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
@@ -137,19 +139,21 @@ public class CalendarPanel extends JPanel {
         for (int r = 0; r < 5; r++) {
             for (int c = 0; c < 7; c++) {
                 LocalDate dayDate = LocalDate.of(year, month, day);
-                DayButton dayButton = new DayButton(String.valueOf(day), dayDate);
-                dayButton.setOpaque(true);
+                DayButton dayButton = new DayButton(daysPanel, String.valueOf(day), dayDate);
+                dayButton.getLabel().setOpaque(true);
                 if (!readonly && !dayButton.getDate().isBefore(LocalDate.now())) {
-                    dayButton.addActionListener(e -> {
-                        setStartAndEndDate(dayButton.getDate());
-                        markSelectedDays();
+                    dayButton.getLabel().addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            setStartAndEndDate(dayDate);
+                            markSelectedDays();
+                        }
                     });
                 }
                 if (isEventOnDate(dayDate))
-                    dayButton.setBackground(Color.RED);
+                    dayButton.getLabel().setBackground(GuiUtils.RESERVED);
                 if (dayDate.isEqual(LocalDate.now()))
-                    dayButton.setForeground(Color.BLUE);
-                daysPanel.add(dayButton);
+                    dayButton.getLabel().setForeground(GuiUtils.BLUE);
                 day++;
                 if (previousMonthDays && day > previousMonthDayCount) {
                     previousMonthDays = false;
@@ -179,13 +183,13 @@ public class CalendarPanel extends JPanel {
         } else if (endDate != null && date.isEqual(endDate)) {
             endDate = null;
         } else if (startDate != null && date.isAfter(startDate)) {
-            if (!isEventInBetween(startDate, date)) {
+            if (noEventInBetween(startDate, date)) {
                 endDate = date;
             } else {
                 JOptionPane.showMessageDialog(this, "In dem ausgewählten Zeitraum ist der Artikel bereits reserviert");
             }
         } else if (startDate != null && date.isBefore(startDate)) {
-            if (!isEventInBetween(startDate, date)) {
+            if (noEventInBetween(startDate, date)) {
                 if (endDate == null)
                     endDate = startDate;
                 startDate = date;
@@ -195,7 +199,7 @@ public class CalendarPanel extends JPanel {
         }
     }
 
-    private boolean isEventInBetween(LocalDate date1, LocalDate date2) {
+    private boolean noEventInBetween(LocalDate date1, LocalDate date2) {
         LocalDate first, second;
         if (date1.isBefore(date2)) {
             first = date1;
@@ -206,10 +210,10 @@ public class CalendarPanel extends JPanel {
         }
         while (!first.isEqual(second.plusDays(1))) {
             if (isEventOnDate(first))
-                return true;
+                return false;
             first = first.plusDays(1);
         }
-        return false;
+        return true;
     }
 
     private void markSelectedDays() {
