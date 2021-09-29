@@ -53,11 +53,11 @@ public class LendDialog extends JDialog {
         JPanel panelNames = new JPanel(flowLayout);
         panelNewPerson.add(panelNames);
 
-        textFieldFirstName = GuiUtils.createNewInput(panelNames, "Vorname", "", 25, false);
-        textFieldLastName = GuiUtils.createNewInput(panelNames, "Nachname", "", 25, false);
-        textFieldAddress = GuiUtils.createNewInput(panelNewPerson, "Adresse", "", 50, true);
-        textFieldPhone = GuiUtils.createNewInput(panelNewPerson, "Telefonnummer", "", 50, true);
-        textFieldMail = GuiUtils.createNewInput(panelNewPerson, "E-Mail", "", 50, true);
+        textFieldFirstName = GuiUtils.createNewInput(panelNames, "Vorname", "", 15, false);
+        textFieldLastName = GuiUtils.createNewInput(panelNames, "Nachname", "", 15, false);
+        textFieldAddress = GuiUtils.createNewInput(panelNewPerson, "Adresse", "", 30, true);
+        textFieldPhone = GuiUtils.createNewInput(panelNewPerson, "Telefonnummer", "", 30, true);
+        textFieldMail = GuiUtils.createNewInput(panelNewPerson, "E-Mail", "", 30, true);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -69,7 +69,7 @@ public class LendDialog extends JDialog {
         constraints.gridheight = 1;
 
         personsList = new JList<>();
-        textFieldSearch = GuiUtils.createNewInput(null, "Suche (Name/Email)", "", 50, false);
+        textFieldSearch = GuiUtils.createNewInput(null, "Suche (Name/Email)", "", 30, false);
         textFieldSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -88,14 +88,12 @@ public class LendDialog extends JDialog {
         constraints.gridheight = 1;
         panelSearchPerson.add(personsScrollPane, constraints);
 
-        JPanel panelDateInputs = new JPanel(flowLayout);
-        add(panelDateInputs);
         calendarPanel = new CalendarPanel(false);
-        panelDateInputs.add(calendarPanel);
+        add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
         calendarPanel.showMonth(LocalDate.now());
-        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", "", 50, true);
-        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", "", 50, true);
+        textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", "", 30, true);
+        textFieldComment = GuiUtils.createNewInput(this, "Kommentar", "", 30, true);
 
         JPanel panelButtons = new JPanel(new FlowLayout());
         add(panelButtons);
