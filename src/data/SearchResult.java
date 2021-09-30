@@ -1,4 +1,3 @@
 package data;
 
-public class SearchResult {
-}
+public class SearchResult { }

@@ -3,13 +3,16 @@ package gui;
 import data.*;
 import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
-import org.apache.derby.client.am.DateTime;
 import store.DBConnection;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,10 +28,10 @@ public class MainWindow extends JFrame {
 
     private final TextField textFieldSearch;
 
-    private final JPanel resultsListingPanel;
-    private final JPanel categoriesPanel;
+    private final JComboBox<String> searchResultsFilter;
+    private final JPanel filterPanel, resultsListingPanel, categoriesPanel;
 
-    private SelectorView<SearchSetting> activeSearchSettingView = null;
+    private SelectorView<SearchSetting<? extends SearchResult>> activeSearchSettingView = null;
     private SelectorView<Category> activeCategorySelectorView = null;
 
     private final PropertyChangeListener searchResultsPropertyChangeListener;
@@ -79,11 +82,31 @@ public class MainWindow extends JFrame {
         searchSettingsScrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.DARK_GRAY));
         centerPanel.add(searchSettingsScrollPane, gridBagConstraints);
 
+        JPanel middleColumnPanel = new JPanel(new BorderLayout());
+
+        searchResultsFilter = new JComboBox<>();
+        searchResultsFilter.addItemListener(e -> {
+            getActiveSearchSetting().setActiveFilter(searchResultsFilter.getItemAt(searchResultsFilter.getSelectedIndex()));
+            try {
+                updateSearchResults();
+            } catch (LoadSaveException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        filterPanel = new JPanel(new GridLayout(0,2));
+        GuiUtils.createLabel(filterPanel, "Filter: ", GuiUtils.FONT_M, false);
+        filterPanel.add(searchResultsFilter);
+        filterPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.DARK_GRAY), new EmptyBorder(5, 5, 5, 5)));
+        middleColumnPanel.add(filterPanel, BorderLayout.NORTH);
+
         resultsListingPanel = new JPanel();
         resultsListingPanel.setLayout(new BoxLayout(resultsListingPanel, BoxLayout.Y_AXIS));
-        JScrollPane resultsScrollPane = new JScrollPane(resultsListingPanel);
-        resultsScrollPane.setBorder(new LineBorder(Color.DARK_GRAY, 1));
-        centerPanel.add(resultsScrollPane, gridBagConstraints);
+        middleColumnPanel.add(resultsListingPanel);
+
+        JScrollPane middleColumnScrollPane = new JScrollPane(middleColumnPanel);
+        middleColumnScrollPane.setBorder(new LineBorder(Color.DARK_GRAY, 1));
+        centerPanel.add(middleColumnScrollPane, gridBagConstraints);
 
         categoriesPanel = new JPanel();
         JScrollPane categoriesScrollPane = new JScrollPane(categoriesPanel);
@@ -151,17 +174,18 @@ public class MainWindow extends JFrame {
     private void initSearchSettings(JPanel parent) throws LoadSaveException {
         parent.setLayout(new BoxLayout(parent, BoxLayout.Y_AXIS));
 
-        List<SearchSetting> searchSettingList = new ArrayList<>();
-        searchSettingList.add(new SearchSetting("Artikel", ItemsContainer.instance(), true) {
+        List<SearchSetting<? extends SearchResult>> searchSettingList = new ArrayList<>();
+        searchSettingList.add(new SearchSetting<Item>("Artikel", ItemsContainer.instance(), true) {
             @Override
             public List<? extends SearchResult> listAll() throws LoadSaveException {
                 if (getActiveCategory() == null ||getActiveCategory().getId() == -1)
-                    return ItemsContainer.instance().getItems();
+                    return ItemsContainer.instance().getItems().stream().filter(getActiveFilter()).collect(Collectors.toList());
                 else
                     return ItemsContainer
                             .instance()
                             .getItems()
                             .stream()
+                            .filter(getActiveFilter())
                             .filter(i -> i.getCategory() == getActiveCategory())
                             .collect(Collectors.toList());
             }
@@ -173,6 +197,7 @@ public class MainWindow extends JFrame {
                         .instance()
                         .getItems()
                         .stream()
+                        .filter(getActiveFilter())
                         .filter(i -> (getActiveCategory() == null || getActiveCategory().getId() == -1 || i.getCategory() == getActiveCategory()) && (("#" + i.getInventoryNumber()).contains(searchLC) || i.getDescription().toLowerCase().contains(searchLC)))
                         .collect(Collectors.toList());
             }
@@ -197,59 +222,65 @@ public class MainWindow extends JFrame {
                 return l1.isReturned() ? 1 : -1;
             }
         };
-        searchSettingList.add(new SearchSetting("Leihen", LendsContainer.instance(), true) {
-            @Override
-            public List<? extends SearchResult> listAll() throws LoadSaveException {
-                if (getActiveCategory() == null || getActiveCategory().getId() == -1)
-                    return LendsContainer
-                            .instance()
-                            .getLends()
-                            .stream()
-                            .sorted(lendComparator)
-                            .collect(Collectors.toList());
-                else
-                    return LendsContainer
-                            .instance()
-                            .getLends()
-                            .stream()
-                            .filter(l -> l.getItem().getCategory() == getActiveCategory())
-                            .sorted(lendComparator)
-                            .collect(Collectors.toList());
-            }
+        searchSettingList.add(
+                new SearchSetting<Lend>("Leihen", LendsContainer.instance(), true) {
+                    @Override
+                    public List<? extends SearchResult> listAll() throws LoadSaveException {
+                        if (getActiveCategory() == null || getActiveCategory().getId() == -1)
+                            return LendsContainer
+                                    .instance()
+                                    .getLends()
+                                    .stream()
+                                    .sorted(lendComparator)
+                                    .filter(getActiveFilter())
+                                    .collect(Collectors.toList());
+                        else
+                            return LendsContainer
+                                    .instance()
+                                    .getLends()
+                                    .stream()
+                                    .filter(getActiveFilter())
+                                    .filter(l -> l.getItem().getCategory() == getActiveCategory())
+                                    .sorted(lendComparator)
+                                    .collect(Collectors.toList());
+                    }
 
-            @Override
-            public List<? extends SearchResult> search(String search) throws LoadSaveException {
-                String searchLC = search.toLowerCase();
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-                LocalDate _date = null;
-                try {
-                    _date = LocalDate.parse(searchLC.trim(), dtf);
-                } catch (DateTimeParseException ignored) {}
-                final LocalDate date = _date;
-                return LendsContainer
-                        .instance()
-                        .getLends()
-                        .stream()
-                        .filter(l -> (getActiveCategory() == null
-                                        || getActiveCategory().getId() == -1
-                                        || l.getItem().getCategory() == getActiveCategory()) &&
-                                (("#" + l.getItem().getInventoryNumber()).contains(searchLC)
-                                        || ("*" + l.getId()).contains(searchLC)
-                                        || l.getPerson().getEmail().toLowerCase().contains(searchLC)
-                                        || l.getPerson().getName().toLowerCase().contains(searchLC)
-                                        || l.getItem().getDescription().toLowerCase().contains(searchLC)
-                                        || (date != null && !date.isAfter(l.getExpectedReturnDate()) && !date.isBefore(l.getLendDate()))
+                    @Override
+                    public List<? extends SearchResult> search(String search) throws LoadSaveException {
+                        String searchLC = search.toLowerCase();
+                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                        LocalDate _date = null;
+                        try {
+                            _date = LocalDate.parse(searchLC.trim(), dtf);
+                        } catch (DateTimeParseException ignored) {}
+                        final LocalDate date = _date;
+                        return LendsContainer
+                                .instance()
+                                .getLends()
+                                .stream()
+                                .filter(getActiveFilter())
+                                .filter(l -> (getActiveCategory() == null
+                                                || getActiveCategory().getId() == -1
+                                                || l.getItem().getCategory() == getActiveCategory()) &&
+                                        (("#" + l.getItem().getInventoryNumber()).contains(searchLC)
+                                                || ("*" + l.getId()).contains(searchLC)
+                                                || l.getPerson().getEmail().toLowerCase().contains(searchLC)
+                                                || l.getPerson().getName().toLowerCase().contains(searchLC)
+                                                || l.getItem().getDescription().toLowerCase().contains(searchLC)
+                                                || (date != null && !date.isAfter(l.getExpectedReturnDate()) && !date.isBefore(l.getLendDate()))
+                                        )
                                 )
-                        )
-                        .sorted(lendComparator)
-                        .collect(Collectors.toList());
-            }
-        });
+                                .sorted(lendComparator)
+                                .collect(Collectors.toList());
+                    }
+                }.addFilter("Aktiv", lend -> lend.getStatus() == Lend.PICKED_UP || lend.getStatus() == Lend.PICKED_UP_EXPIRED)
+                        .addFilter("Abgeschlossen", lend -> lend.getStatus() == Lend.RETURNED)
+                        .addFilter("Reserviert", lend -> lend.getStatus() == Lend.RESERVED));
 
-        searchSettingList.add(new SearchSetting("Personen", PersonsContainer.instance(), false) {
+        searchSettingList.add(new SearchSetting<Person>("Personen", PersonsContainer.instance(), false) {
             @Override
             public List<? extends SearchResult> listAll() throws LoadSaveException {
-                return PersonsContainer.instance().getPersons();
+                return PersonsContainer.instance().getPersons().stream().filter(getActiveFilter()).collect(Collectors.toList());
             }
 
             @Override
@@ -259,15 +290,16 @@ public class MainWindow extends JFrame {
                         .instance()
                         .getPersons()
                         .stream()
+                        .filter(getActiveFilter())
                         .filter(p -> p.getEmail().toLowerCase().contains(searchLC) || p.getName().toLowerCase().contains(searchLC))
                         .collect(Collectors.toList());
             }
         });
 
-        searchSettingList.add(new SearchSetting("Kategorien", CategoriesContainer.instance(), false) {
+        searchSettingList.add(new SearchSetting<Category>("Kategorien", CategoriesContainer.instance(), false) {
             @Override
             public List<? extends SearchResult> listAll() throws LoadSaveException {
-                return CategoriesContainer.instance().getCategories();
+                return CategoriesContainer.instance().getCategories().stream().filter(getActiveFilter()).collect(Collectors.toList());
             }
 
             @Override
@@ -277,16 +309,17 @@ public class MainWindow extends JFrame {
                         .instance()
                         .getCategories()
                         .stream()
+                        .filter(getActiveFilter())
                         .filter(c -> c.getName().toLowerCase().contains(searchLC))
                         .collect(Collectors.toList());
             }
         });
 
         if (getUser().isAdmin())
-            searchSettingList.add(new SearchSetting("Nutzer", UsersContainer.instance(), false) {
+            searchSettingList.add(new SearchSetting<User>("Nutzer", UsersContainer.instance(), false) {
                 @Override
                 public List<? extends SearchResult> listAll() throws LoadSaveException {
-                    return UsersContainer.instance().getUsers();
+                    return UsersContainer.instance().getUsers().stream().filter(getActiveFilter()).collect(Collectors.toList());
                 }
 
                 @Override
@@ -296,13 +329,14 @@ public class MainWindow extends JFrame {
                             .instance()
                             .getUsers()
                             .stream()
+                            .filter(getActiveFilter())
                             .filter(u -> u.getName().toLowerCase().contains(searchLC) && u.getUsername().toLowerCase().contains(searchLC))
                             .collect(Collectors.toList());
                 }
             });
 
         searchSettingList.forEach(searchSetting -> {
-            SelectorView<SearchSetting> searchSettingView = new SelectorView<>(searchSetting);
+            SelectorView<SearchSetting<? extends SearchResult>> searchSettingView = new SelectorView<>(searchSetting);
             searchSettingView.addActionListener(e -> setActiveSearchSettingView(searchSettingView));
             parent.add(searchSettingView);
             if (getActiveSearchSettingView() == null)
@@ -375,11 +409,11 @@ public class MainWindow extends JFrame {
         resultsListingPanel.updateUI();
     }
 
-    private SelectorView<SearchSetting> getActiveSearchSettingView() {
+    private SelectorView<SearchSetting<? extends SearchResult>> getActiveSearchSettingView() {
         return activeSearchSettingView;
     }
 
-    private void setActiveSearchSettingView(SelectorView<SearchSetting> searchSettingView) {
+    private void setActiveSearchSettingView(SelectorView<SearchSetting<? extends SearchResult>> searchSettingView) {
         if (activeSearchSettingView != null) {
             getActiveSearchSetting().getAssociatedContainer().removePropertyChangeListener(searchResultsPropertyChangeListener);
             activeSearchSettingView.setActive(false);
@@ -388,6 +422,18 @@ public class MainWindow extends JFrame {
         if (activeSearchSettingView != null)
             activeSearchSettingView.setActive(true);
         categoriesPanel.setVisible(getActiveSearchSetting().usesCategories());
+
+        SearchSetting<? extends SearchResult> searchSetting = getActiveSearchSetting();
+
+        searchResultsFilter.removeAllItems();
+        if (searchSetting.getFilters().size() > 0) {
+            filterPanel.setVisible(true);
+            searchResultsFilter.addItem("Alle");
+            searchSetting.getFilters().keySet().stream().sorted().forEach(searchResultsFilter::addItem);
+        } else {
+            filterPanel.setVisible(false);
+        }
+
         try {
             updateSearchResults();
         } catch (LoadSaveException e) {
@@ -396,7 +442,7 @@ public class MainWindow extends JFrame {
         getActiveSearchSetting().getAssociatedContainer().addPropertyChangeListener(searchResultsPropertyChangeListener);
     }
 
-    private SearchSetting getActiveSearchSetting() {
+    private SearchSetting<? extends SearchResult> getActiveSearchSetting() {
         return activeSearchSettingView.getLinkedObject();
     }
 
