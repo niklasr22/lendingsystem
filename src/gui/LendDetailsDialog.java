@@ -146,16 +146,36 @@ public class LendDetailsDialog extends JDialog {
     }
 
     private void saveLend() {
-        try {
-            lend.setDeposit(textFieldDeposit.getText());
-            lend.setComment(textFieldComment.getText());
-            lend.setExpectedReturnDate(calendarPanel.getEndDate());
-            lend.setLastModifiedByUser(user.getUsername());
-            lend.setLastModifiedDate(LocalDateTime.now());
-            LendsContainer.instance().modifyLend(lend);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+        if (calendarPanel.getStartDate() == null) {
+            JOptionPane.showMessageDialog(this, "Bitte gültiges Datum eintagen");
             return;
+        }
+        if (calendarPanel.getEndDate() == null) {
+            try {
+                lend.setDeposit(textFieldDeposit.getText());
+                lend.setComment(textFieldComment.getText());
+                lend.setLendDate(calendarPanel.getStartDate());
+                lend.setExpectedReturnDate(calendarPanel.getStartDate());
+                lend.setLastModifiedByUser(user.getUsername());
+                lend.setLastModifiedDate(LocalDateTime.now());
+                LendsContainer.instance().modifyLend(lend);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, e.getMessage());
+                return;
+            }
+        } else {
+            try {
+                lend.setDeposit(textFieldDeposit.getText());
+                lend.setComment(textFieldComment.getText());
+                lend.setLendDate(calendarPanel.getStartDate());
+                lend.setExpectedReturnDate(calendarPanel.getEndDate());
+                lend.setLastModifiedByUser(user.getUsername());
+                lend.setLastModifiedDate(LocalDateTime.now());
+                LendsContainer.instance().modifyLend(lend);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, e.getMessage());
+                return;
+            }
         }
         dispose();
     }

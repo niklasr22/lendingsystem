@@ -26,6 +26,7 @@ public class CalendarPanel extends JPanel {
     private final JFrame mainWindow;
     private final User user;
     private final Item item;
+    private Lend lend;
 
     public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, boolean readonly) {
         super();
@@ -199,16 +200,17 @@ public class CalendarPanel extends JPanel {
     }
 
     private void setStartAndEndDate(LocalDate date) {
+        //TODO: test if all cases are handled correctly
         if (startDate == null && !isEventOnDate(date)) {
             startDate = date;
         } else if (startDate != null && endDate == null && date.isEqual(startDate)) {
             startDate = null;
-        } else if (startDate != null && endDate != null && date.isEqual(startDate) && item.isAvailable()) {
+        } else if (startDate != null && endDate != null && date.isEqual(startDate) && !(!item.isAvailable() && LocalDate.now().isAfter(startDate) && LocalDate.now().isBefore(endDate))) {
             startDate = endDate;
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate) && item.isAvailable()) {
+        } else if (endDate != null && date.isEqual(endDate) && (LocalDate.now().isBefore(startDate) || LocalDate.now().isEqual(startDate))) {
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate) && !item.isAvailable()) {
+        } else if (endDate != null && date.isEqual(endDate) && LocalDate.now().isAfter(startDate)) {
             endDate = LocalDate.now();
         } else if (startDate != null && date.isAfter(startDate)) {
             if (noEventInBetween(startDate, date)) {
@@ -216,7 +218,7 @@ public class CalendarPanel extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(this, "In dem ausgewählten Zeitraum ist der Artikel bereits reserviert");
             }
-        } else if (startDate != null && date.isBefore(startDate) && item.isAvailable()) {
+        } else if (startDate != null && date.isBefore(startDate)) {
             if (noEventInBetween(startDate, date)) {
                 if (endDate == null)
                     endDate = startDate;
@@ -290,6 +292,7 @@ public class CalendarPanel extends JPanel {
     }
 
     public void setLend(Lend lend) {
+        this.lend = lend;
         startDate = lend.getStartDate();
         endDate = lend.getEndDate();
         events.remove(lend);

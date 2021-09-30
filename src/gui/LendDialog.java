@@ -124,8 +124,8 @@ public class LendDialog extends JDialog {
     }
 
     private void saveLend() {
-        if (calendarPanel.getStartDate() == null || calendarPanel.getEndDate() == null) {
-            JOptionPane.showMessageDialog(this, "Bitte gültiges Start- und Enddatum auswählen");
+        if (calendarPanel.getStartDate() == null) {
+            JOptionPane.showMessageDialog(this, "Bitte gültiges Datum auswählen");
             return;
         }
         try {
@@ -149,16 +149,30 @@ public class LendDialog extends JDialog {
                 return;
             }
 
-            Lend lend = new Lend(
-                    item,
-                    person,
-                    calendarPanel.getStartDate(),
-                    calendarPanel.getEndDate(),
-                    null,
-                    textFieldDeposit.getText(),
-                    textFieldComment.getText(),
-                    LocalDateTime.now(),
-                    user.getUsername());
+            Lend lend;
+            if (calendarPanel.getEndDate() == null) {
+                lend = new Lend(
+                        item,
+                        person,
+                        calendarPanel.getStartDate(),
+                        calendarPanel.getStartDate(),
+                        null,
+                        textFieldDeposit.getText(),
+                        textFieldComment.getText(),
+                        LocalDateTime.now(),
+                        user.getUsername());
+            } else {
+                lend = new Lend(
+                        item,
+                        person,
+                        calendarPanel.getStartDate(),
+                        calendarPanel.getEndDate(),
+                        null,
+                        textFieldDeposit.getText(),
+                        textFieldComment.getText(),
+                        LocalDateTime.now(),
+                        user.getUsername());
+            }
             LendsContainer.instance().linkLend(lend);
             ItemsContainer.instance().modifyItem(item);
         } catch (Exception e) {

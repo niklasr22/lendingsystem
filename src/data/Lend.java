@@ -48,7 +48,7 @@ public class Lend extends SearchResult implements CalendarEvent {
         this.person = person;
     }
 
-    private void setLendDate(LocalDate lendDate) {
+    public void setLendDate(LocalDate lendDate) {
         this.lendDate = lendDate;
     }
 
