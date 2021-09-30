@@ -203,18 +203,20 @@ public class CalendarPanel extends JPanel {
             startDate = date;
         } else if (startDate != null && endDate == null && date.isEqual(startDate)) {
             startDate = null;
-        } else if (startDate != null && endDate != null && date.isEqual(startDate)) {
+        } else if (startDate != null && endDate != null && date.isEqual(startDate) && item.isAvailable()) {
             startDate = endDate;
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate)) {
+        } else if (endDate != null && date.isEqual(endDate) && item.isAvailable()) {
             endDate = null;
+        } else if (endDate != null && date.isEqual(endDate) && !item.isAvailable()) {
+            endDate = LocalDate.now();
         } else if (startDate != null && date.isAfter(startDate)) {
             if (noEventInBetween(startDate, date)) {
                 endDate = date;
             } else {
                 JOptionPane.showMessageDialog(this, "In dem ausgewählten Zeitraum ist der Artikel bereits reserviert");
             }
-        } else if (startDate != null && date.isBefore(startDate)) {
+        } else if (startDate != null && date.isBefore(startDate) && item.isAvailable()) {
             if (noEventInBetween(startDate, date)) {
                 if (endDate == null)
                     endDate = startDate;
@@ -285,5 +287,12 @@ public class CalendarPanel extends JPanel {
 
     public LocalDate getEndDate() {
         return endDate;
+    }
+
+    public void setLend(Lend lend) {
+        startDate = lend.getStartDate();
+        endDate = lend.getEndDate();
+        events.remove(lend);
+        markSelectedDays();
     }
 }

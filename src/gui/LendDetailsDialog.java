@@ -8,25 +8,27 @@ import exceptions.IllegalInputException;
 import exceptions.LoadSaveException;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 
 public class LendDetailsDialog extends JDialog {
 
     private final TextField
             textFieldDeposit,
-            textFieldPlannedReturnDate,
             textFieldComment;
     private final Lend lend;
     private final User user;
+    private final CalendarPanel calendarPanel;
 
     public LendDetailsDialog(JFrame parent, Lend lend, User user) {
         super(parent, "Details zur Leihe *" + lend.getId(), true);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-        setLayout(new GridLayout(0, 1));
+        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
         this.user = user;
         this.lend = lend;
@@ -45,7 +47,7 @@ public class LendDetailsDialog extends JDialog {
         add(panel);
 
         panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        GuiUtils.createLabel(panel, "Verliehen an " + lend.getPerson().getName() + " ab dem " + dtf.format(lend.getLendDate()), true);
+        GuiUtils.createLabel(panel, "Verliehen an " + lend.getPerson().getName(), true);
         button = new JButton("Nutzer anzeigen");
         button.addActionListener(evt -> {
             dispose();
@@ -54,23 +56,39 @@ public class LendDetailsDialog extends JDialog {
         panel.add(button);
         add(panel);
 
-        if (!isLent)
-            GuiUtils.createLabel(this, "Zurückgegeben am " + dtf.format(lend.getReturnDate()), true);
+        calendarPanel = new CalendarPanel(this, parent, user, lend.getItem(), lend.getStatus() == Lend.RETURNED);
+        calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
+        add(calendarPanel);
+        calendarPanel.linkEvents(new ArrayList<>(lend.getItem().getLends()));
+        calendarPanel.showMonth(LocalDate.now());
+        calendarPanel.setLend(lend);
 
+        if (!isLent) {
+            panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            GuiUtils.createLabel(panel, "Zurückgegeben am " + dtf.format(lend.getReturnDate()), true);
+            add(panel);
+        }
 
-        GuiUtils.createLabel(this, "Pfand:", true);
+        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        GuiUtils.createLabel(panel, "Pfand:", true);
+        add(panel);
         textFieldDeposit = GuiUtils.createNewInput(this, "Pfand", lend.getDeposit(), true);
         textFieldDeposit.setEnabled(isLent);
 
-        GuiUtils.createLabel(this, "Geplantes Rückgabedatum:", true);
-        textFieldPlannedReturnDate = GuiUtils.createNewInput(this, "Geplantes Rückgabedatum (TT.MM.JJJJ)", dtf.format(lend.getExpectedReturnDate()), true);
-        textFieldPlannedReturnDate.setEnabled(isLent);
-
-        GuiUtils.createLabel(this, "Kommentar:", true);
+        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        GuiUtils.createLabel(panel, "Kommentar:", true);
+        add(panel);
         textFieldComment = GuiUtils.createNewInput(this, "Kommentar", lend.getComment(), true);
 
+        JPanel infoPanel = new JPanel(new GridLayout(0, 1));
+        if (lend.getItem().isAvailable())
+            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell verfügbar.", true).setForeground(GuiUtils.GREEN);
+        else
+            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell nicht verfügbar.", true).setForeground(GuiUtils.ORANGE);
+        add(infoPanel);
+
         DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-        GuiUtils.createLabel(this, "Letzte Bearbeitung von " + lend.getLastModifiedByUser() + " am " + dtf2.format(lend.getLastModifiedDate()) , true);
+        GuiUtils.createLabel(infoPanel, "Letzte Bearbeitung von " + lend.getLastModifiedByUser() + " am " + dtf2.format(lend.getLastModifiedDate()) , true);
 
         JPanel panelButtons = new JPanel(new FlowLayout());
         add(panelButtons);
@@ -128,17 +146,13 @@ public class LendDetailsDialog extends JDialog {
     }
 
     private void saveLend() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern ("dd.MM.yyyy");
         try {
             lend.setDeposit(textFieldDeposit.getText());
             lend.setComment(textFieldComment.getText());
-            lend.setExpectedReturnDate(LocalDate.parse(textFieldPlannedReturnDate.getText(), dtf));
+            lend.setExpectedReturnDate(calendarPanel.getEndDate());
             lend.setLastModifiedByUser(user.getUsername());
             lend.setLastModifiedDate(LocalDateTime.now());
             LendsContainer.instance().modifyLend(lend);
-        } catch (DateTimeParseException e) {
-            JOptionPane.showMessageDialog(this, "Mindestens ein Datum entspricht nicht dem Format TT.MM.YYYY");
-            return;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
             return;
@@ -146,4 +160,7 @@ public class LendDetailsDialog extends JDialog {
         dispose();
     }
 
+    public Lend getLend() {
+        return lend;
+    }
 }
