@@ -175,33 +175,36 @@ public class MainWindow extends JFrame {
         parent.setLayout(new BoxLayout(parent, BoxLayout.Y_AXIS));
 
         List<SearchSetting<? extends SearchResult>> searchSettingList = new ArrayList<>();
-        searchSettingList.add(new SearchSetting<Item>("Artikel", ItemsContainer.instance(), true) {
-            @Override
-            public List<? extends SearchResult> listAll() throws LoadSaveException {
-                if (getActiveCategory() == null ||getActiveCategory().getId() == -1)
-                    return ItemsContainer.instance().getItems().stream().filter(getActiveFilter()).collect(Collectors.toList());
-                else
-                    return ItemsContainer
-                            .instance()
-                            .getItems()
-                            .stream()
-                            .filter(getActiveFilter())
-                            .filter(i -> i.getCategory() == getActiveCategory())
-                            .collect(Collectors.toList());
-            }
+        searchSettingList.add(
+                new SearchSetting<Item>("Artikel", ItemsContainer.instance(), true) {
+                    @Override
+                    public List<? extends SearchResult> listAll() throws LoadSaveException {
+                        if (getActiveCategory() == null ||getActiveCategory().getId() == -1)
+                            return ItemsContainer.instance().getItems().stream().filter(getActiveFilter()).collect(Collectors.toList());
+                        else
+                            return ItemsContainer
+                                    .instance()
+                                    .getItems()
+                                    .stream()
+                                    .filter(getActiveFilter())
+                                    .filter(i -> i.getCategory() == getActiveCategory())
+                                    .collect(Collectors.toList());
+                    }
 
-            @Override
-            public List<? extends SearchResult> search(String search) throws LoadSaveException {
-                String searchLC = search.toLowerCase();
-                return ItemsContainer
-                        .instance()
-                        .getItems()
-                        .stream()
-                        .filter(getActiveFilter())
-                        .filter(i -> (getActiveCategory() == null || getActiveCategory().getId() == -1 || i.getCategory() == getActiveCategory()) && (("#" + i.getInventoryNumber()).contains(searchLC) || i.getDescription().toLowerCase().contains(searchLC)))
-                        .collect(Collectors.toList());
-            }
-        });
+                    @Override
+                    public List<? extends SearchResult> search(String search) throws LoadSaveException {
+                        String searchLC = search.toLowerCase();
+                        return ItemsContainer
+                                .instance()
+                                .getItems()
+                                .stream()
+                                .filter(getActiveFilter())
+                                .filter(i -> (getActiveCategory() == null || getActiveCategory().getId() == -1 || i.getCategory() == getActiveCategory()) && (("#" + i.getInventoryNumber()).contains(searchLC) || i.getDescription().toLowerCase().contains(searchLC)))
+                                .collect(Collectors.toList());
+                    }
+                }.addFilter("Verfügbar", Item::isAvailable)
+                        .addFilter("Nicht verfügbar", item -> !item.isAvailable())
+        );
 
         Comparator<Lend> lendComparator = (l1, l2) -> {
             if (l1.isReturned() && l2.isReturned()) {

@@ -79,10 +79,6 @@ public class LendDetailsDialog extends JDialog {
         textFieldComment = GuiUtils.createNewInput(this, "Kommentar", lend.getComment(), true);
 
         JPanel infoPanel = new JPanel(new GridLayout(0, 1));
-        if (lend.getItem().isAvailable())
-            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell verfügbar.", true).setForeground(GuiUtils.GREEN);
-        else
-            GuiUtils.createLabel(infoPanel, "Dieser Artikel ist aktuell nicht verfügbar.", true).setForeground(GuiUtils.ORANGE);
         add(infoPanel);
 
         DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
