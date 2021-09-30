@@ -1,6 +1,5 @@
 package gui;
 
-import data.ItemsContainer;
 import data.Lend;
 import data.LendsContainer;
 import data.User;
@@ -13,7 +12,6 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 public class LendDetailsDialog extends JDialog {
@@ -102,9 +100,8 @@ public class LendDetailsDialog extends JDialog {
             int status = JOptionPane.showConfirmDialog(this, "Rückgabe bestätigen?");
             if (status == JOptionPane.OK_OPTION) {
                 try {
-                    lend.setReturnDate(LocalDate.now());
-                    LendsContainer.instance().modifyLend(lend);
-                    ItemsContainer.instance().modifyItem(lend.getItem());
+                    getLend().returnItem();
+                    LendsContainer.instance().modifyLend(getLend());
                     dispose();
                 } catch (IllegalInputException | LoadSaveException e) {
                     e.printStackTrace();
