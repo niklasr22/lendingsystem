@@ -91,25 +91,43 @@ public class LendDetailsDialog extends JDialog {
         btnSave.addActionListener(e -> this.saveLend());
         panelButtons.add(btnSave);
 
-        Button btnReturnLend = new Button("Rückgabe");
-        btnReturnLend.addActionListener(evt -> {
-            int status = JOptionPane.showConfirmDialog(this, "Rückgabe bestätigen?");
-            if (status == JOptionPane.OK_OPTION) {
-                try {
-                    getLend().returnItem();
-                    LendsContainer.instance().modifyLend(getLend());
-                    dispose();
-                } catch (IllegalInputException | LoadSaveException e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, e.getMessage());
+        if (getLend().getStatus() == Lend.PICKED_UP || getLend().getStatus() == Lend.PICKED_UP_EXPIRED) {
+            Button btnReturnLend = new Button("Rückgabe");
+            btnReturnLend.addActionListener(evt -> {
+                int status = JOptionPane.showConfirmDialog(this, "Rückgabe bestätigen?");
+                if (status == JOptionPane.OK_OPTION) {
+                    try {
+                        getLend().returnItem();
+                        LendsContainer.instance().modifyLend(getLend());
+                        dispose();
+                    } catch (IllegalInputException | LoadSaveException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(this, e.getMessage());
+                    }
                 }
+            });
+            if (!isLent || lend.getLendDate().isAfter(LocalDate.now())) {
+                btnReturnLend.setEnabled(false);
+                btnReturnLend.setToolTipText("Der Artikel wurde bereits zurückgegeben oder der Verleihtag liegt in der Zukunft.");
             }
-        });
-        if (!isLent || lend.getLendDate().isAfter(LocalDate.now())) {
-            btnReturnLend.setEnabled(false);
-            btnReturnLend.setToolTipText("Der Artikel wurde bereits zurückgegeben oder der Verleihtag liegt in der Zukunft.");
+            panelButtons.add(btnReturnLend);
+        } else if (getLend().getStatus() == Lend.RESERVED) {
+            JButton btnPickUpLend = new JButton("Abholung");
+            btnPickUpLend.addActionListener(evt -> {
+                int status = JOptionPane.showConfirmDialog(this, "Abholung bestätigen?");
+                if (status == JOptionPane.OK_OPTION) {
+                    try {
+                        getLend().pickUpItem();
+                        LendsContainer.instance().modifyLend(getLend());
+                        dispose();
+                    } catch (LoadSaveException e) {
+                        JOptionPane.showMessageDialog(this, e.getMessage());
+                    }
+                }
+            });
+            btnPickUpLend.setEnabled(getLend().getItem().isAvailable() && !getLend().getLendDate().isAfter(LocalDate.now()));
+            panelButtons.add(btnPickUpLend);
         }
-        panelButtons.add(btnReturnLend);
 
         Button btnDelete = new Button("Löschen");
         btnDelete.addActionListener(evt -> {
