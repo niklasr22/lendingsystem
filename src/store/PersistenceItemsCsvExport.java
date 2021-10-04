@@ -26,7 +26,7 @@ public class PersistenceItemsCsvExport {
                 writer.println(item.getInventoryNumber() + DELIMITER +
                         '"' +  item.getDescription() + '"' + DELIMITER +
                         '"' + item.getCategory().getName() + '"' + DELIMITER +
-                        '"' + (item.isLent() ? "ja" : "nein") + '"');
+                        '"' + (!item.isAvailable() ? "ja" : "nein") + '"');
             }
         } catch (IOException e) {
             e.printStackTrace();

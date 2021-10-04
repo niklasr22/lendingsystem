@@ -107,10 +107,10 @@ public class ExportDialog extends JDialog {
             } else {
                 PersistenceLendsCsvExport persistenceLendsCsvExport = new PersistenceLendsCsvExport(csvFile);
                 try {
-                    Predicate<Lend> baseFilter = l -> (category.getId() == -1 || l.getItem().getCategory() == category) && l.getReturnDate() == null;
+                    Predicate<Lend> baseFilter = l -> (category.getId() == -1 || l.getItem().getCategory() == category) && (l.getStatus() == Lend.PICKED_UP || l.getStatus() == Lend.PICKED_UP_EXPIRED);
                     Predicate<Lend> filter = baseFilter;
                     if (lentCheckBox.isSelected() && expiredCheckBox.isSelected()) {
-                        filter = l -> baseFilter.test(l) && l.getExpectedReturnDate().isBefore(LocalDate.now());
+                        filter = l -> baseFilter.test(l) && l.getStatus() == Lend.PICKED_UP_EXPIRED;
                     }
                     List<Lend> lends = LendsContainer.instance().getLends().stream().filter(filter).collect(Collectors.toList());
                     persistenceLendsCsvExport.save(lends);
