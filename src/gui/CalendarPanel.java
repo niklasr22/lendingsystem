@@ -200,18 +200,18 @@ public class CalendarPanel extends JPanel {
     }
 
     private void setStartAndEndDate(LocalDate date) {
-        //TODO: test if all cases are handled correctly
+        LocalDate now = LocalDate.now();
         if (startDate == null && !isEventOnDate(date)) {
             startDate = date;
         } else if (startDate != null && endDate == null && date.isEqual(startDate)) {
             startDate = null;
-        } else if (startDate != null && endDate != null && date.isEqual(startDate) && !(!item.isAvailable() && LocalDate.now().isAfter(startDate) && LocalDate.now().isBefore(endDate))) {
+        } else if (startDate != null && endDate != null && date.isEqual(startDate) && !(!item.isAvailable() && (now.isAfter(startDate) || now.isEqual(startDate)) && (now.isBefore(endDate) || now.isEqual(endDate)))) {
             startDate = endDate;
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate) && (LocalDate.now().isBefore(startDate) || LocalDate.now().isEqual(startDate))) {
+        } else if (endDate != null && date.isEqual(endDate) && (now.isBefore(startDate) || now.isEqual(startDate))) {
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate) && LocalDate.now().isAfter(startDate)) {
-            endDate = LocalDate.now();
+        } else if (endDate != null && date.isEqual(endDate) && now.isAfter(startDate)) {
+            endDate = now;
         } else if (startDate != null && date.isAfter(startDate)) {
             if (noEventInBetween(startDate, date)) {
                 endDate = date;
