@@ -84,7 +84,7 @@ public class LendDialog extends JDialog {
         constraints.gridheight = 1;
         panelSearchPerson.add(personsScrollPane, constraints);
 
-        calendarPanel = new CalendarPanel(this, parent, user, item, false);
+        calendarPanel = new CalendarPanel(this, parent, user, item, CalendarPanel.MODIFY);
         calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
         add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(item.getLends()));

@@ -14,11 +14,14 @@ import java.util.Locale;
 
 public class CalendarPanel extends JPanel {
 
+    public final static int READONLY = 0;
+    public final static int VIEW_LENDS = 1;
+    public final static int MODIFY = 2;
+
     private final JLabel monthLabel;
     private final JPanel daysPanel;
     private final ArrayList<DayButton> visibleDays;
     private final ArrayList<CalendarEvent> events;
-    private final boolean readonly;
     private LocalDate startDate = null;
     private LocalDate endDate = null;
     private int currentYear, currentMonth;
@@ -27,14 +30,15 @@ public class CalendarPanel extends JPanel {
     private final User user;
     private final Item item;
     private Lend lend;
+    private final int status;
 
-    public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, boolean readonly) {
+    public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, int status) {
         super();
         this.dialog = dialog;
         this.mainWindow = mainWindow;
         this.user = user;
         this.item = item;
-        this.readonly = readonly;
+        this.status = status;
         events = new ArrayList<>();
         visibleDays = new ArrayList<>();
 
@@ -150,7 +154,7 @@ public class CalendarPanel extends JPanel {
                 LocalDate dayDate = LocalDate.of(year, month, day);
                 DayButton dayButton = new DayButton(String.valueOf(day), dayDate);
                 daysPanel.add(dayButton);
-                if (!readonly && !dayButton.getDate().isBefore(LocalDate.now())) {
+                if (status == MODIFY && !dayButton.getDate().isBefore(LocalDate.now())) {
                     dayButton.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
@@ -159,7 +163,7 @@ public class CalendarPanel extends JPanel {
                         }
                     });
                 }
-                if (readonly && isEventOnDate(dayButton.getDate())) {
+                if (status == VIEW_LENDS && isEventOnDate(dayButton.getDate())) {
                     dayButton.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent event) {

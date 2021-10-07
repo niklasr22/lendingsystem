@@ -34,7 +34,7 @@ public class ArticleDetailsDialog extends JDialog {
 
         add(formScrollPane);
 
-        CalendarPanel calendarPanel = new CalendarPanel(this, parent, user, item, true);
+        CalendarPanel calendarPanel = new CalendarPanel(this, parent, user, item, CalendarPanel.VIEW_LENDS);
         calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
         add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(item.getLends()));
