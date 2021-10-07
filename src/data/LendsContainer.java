@@ -47,7 +47,7 @@ public class LendsContainer extends Container implements Iterable<Lend> {
 
     public void unlinkLend(Lend lend) throws LoadSaveException {
         if (lends.contains(lend)) {
-            if (!lend.isReturned() && !lend.getLendDate().isAfter(LocalDate.now()))
+            if (lend.getStatus() == Lend.PICKED_UP_EXPIRED || lend.getStatus() == Lend.PICKED_UP)
                 throw new LoadSaveException("Eine Leihe muss zurückgegeben werden, bevor sie gelöscht werden kann.", null);
             if (!lend.isReturned()) {
                 lend.getItem().unlinkLend(lend);
