@@ -87,7 +87,7 @@ public class SearchResultLendView extends SearchResultView<Lend> {
             label.setText("Bis: " + dtf.format(getContent().getReturnDate()));
         } else {
             label.setText("Bis: " + dtf.format(getContent().getExpectedReturnDate()) + " (geplant)");
-            if (lendStatus == Lend.PICKED_UP_EXPIRED)
+            if (lendStatus == Lend.PICKED_UP_EXPIRED || (lendStatus == Lend.RESERVED && getContent().getExpectedReturnDate().isBefore(LocalDate.now())))
                 label.setForeground(Color.RED);
             else
                 label.setForeground(GuiUtils.GREEN);
@@ -118,7 +118,7 @@ public class SearchResultLendView extends SearchResultView<Lend> {
                     }
                 }
             });
-            button.setEnabled(getContent().getItem().isAvailable() && !getContent().getLendDate().isAfter(LocalDate.now()));
+            button.setEnabled(getContent().getItem().isAvailable() && !getContent().getLendDate().isAfter(LocalDate.now()) && !getContent().getExpectedReturnDate().isBefore(LocalDate.now()));
             buttons.add(button);
         }
         if (lendStatus == Lend.RETURNED || lendStatus == Lend.RESERVED) {

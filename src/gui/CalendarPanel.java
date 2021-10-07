@@ -170,7 +170,7 @@ public class CalendarPanel extends JPanel {
                             try {
                                 LendsContainer container = LendsContainer.instance();
                                 for (Lend lend : container.getLends()) {
-                                    if (lend.getItem() == item && (dayButton.getDate().isEqual(lend.getStartDate()) || dayButton.getDate().isEqual(lend.getEndDate()) || (dayButton.getDate().isBefore(lend.getEndDate()) && dayButton.getDate().isAfter(lend.getStartDate())))) {
+                                    if (lend.getItem() == item && !dayButton.getDate().isAfter(lend.getEndDate()) && !dayButton.getDate().isBefore(lend.getStartDate())) {
                                         dialog.dispose();
                                         new LendDetailsDialog(mainWindow, lend, user);
                                     }
@@ -209,10 +209,10 @@ public class CalendarPanel extends JPanel {
             startDate = date;
         } else if (startDate != null && endDate == null && date.isEqual(startDate)) {
             startDate = null;
-        } else if (startDate != null && endDate != null && date.isEqual(startDate) && !(!item.isAvailable() && (now.isAfter(startDate) || now.isEqual(startDate)) && (now.isBefore(endDate) || now.isEqual(endDate)))) {
+        } else if (startDate != null && endDate != null && date.isEqual(startDate) && !(!item.isAvailable() && !now.isBefore(startDate) && !now.isAfter(endDate))) {
             startDate = endDate;
             endDate = null;
-        } else if (endDate != null && date.isEqual(endDate) && (now.isBefore(startDate) || now.isEqual(startDate))) {
+        } else if (endDate != null && date.isEqual(endDate) && !now.isAfter(startDate)) {
             endDate = null;
         } else if (endDate != null && date.isEqual(endDate) && now.isAfter(startDate)) {
             endDate = now;
@@ -254,7 +254,7 @@ public class CalendarPanel extends JPanel {
         for (DayButton day : visibleDays) {
             LocalDate date = day.getDate();
             if (startDate != null && endDate != null) {
-                if (date.isEqual(startDate) || date.isEqual(endDate) || (date.isAfter(startDate) && date.isBefore(endDate)))
+                if (!date.isAfter(endDate) && !date.isBefore(startDate))
                     day.setSelected(true);
                 else if (!isEventOnDate(date))
                     day.setSelected(false);
@@ -296,7 +296,6 @@ public class CalendarPanel extends JPanel {
     }
 
     public void setLend(Lend lend) {
-        this.lend = lend;
         startDate = lend.getStartDate();
         endDate = lend.getEndDate();
         events.remove(lend);

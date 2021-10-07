@@ -109,6 +109,10 @@ public class Lend extends SearchResult implements CalendarEvent {
         ItemsContainer.instance().modifyItem(getItem());
     }
 
+    public boolean isPickedUp() {
+        return status == PICKED_UP || status == PICKED_UP_EXPIRED;
+    }
+
     public int getId() {
         return id;
     }

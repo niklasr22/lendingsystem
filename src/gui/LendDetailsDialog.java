@@ -54,12 +54,12 @@ public class LendDetailsDialog extends JDialog {
         panel.add(button);
         add(panel);
 
-        int calendatStatus = lend.getStatus() == Lend.RETURNED ? CalendarPanel.READONLY : CalendarPanel.MODIFY;
-        calendarPanel = new CalendarPanel(this, parent, user, lend.getItem(), calendatStatus);
+        int calendarStatus = lend.getStatus() == Lend.RETURNED ? CalendarPanel.READONLY : CalendarPanel.MODIFY;
+        calendarPanel = new CalendarPanel(this, parent, user, lend.getItem(), calendarStatus);
         calendarPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
         add(calendarPanel);
         calendarPanel.linkEvents(new ArrayList<>(lend.getItem().getLends()));
-        calendarPanel.showMonth(LocalDate.now());
+        calendarPanel.showMonth(getLend().getLendDate().getYear(), getLend().getLendDate().getMonthValue());
         calendarPanel.setLend(lend);
 
         if (!isLent) {
@@ -126,7 +126,7 @@ public class LendDetailsDialog extends JDialog {
                     }
                 }
             });
-            btnPickUpLend.setEnabled(getLend().getItem().isAvailable() && !getLend().getLendDate().isAfter(LocalDate.now()));
+            btnPickUpLend.setEnabled(getLend().getItem().isAvailable() && !getLend().getLendDate().isAfter(LocalDate.now()) && !getLend().getExpectedReturnDate().isBefore(LocalDate.now()));
             panelButtons.add(btnPickUpLend);
         }
 

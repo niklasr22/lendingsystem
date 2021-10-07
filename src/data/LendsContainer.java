@@ -47,12 +47,12 @@ public class LendsContainer extends Container implements Iterable<Lend> {
 
     public void unlinkLend(Lend lend) throws LoadSaveException {
         if (lends.contains(lend)) {
-            if (lend.getStatus() == Lend.PICKED_UP_EXPIRED || lend.getStatus() == Lend.PICKED_UP)
+            if (lend.isPickedUp())
                 throw new LoadSaveException("Eine Leihe muss zurückgegeben werden, bevor sie gelöscht werden kann.", null);
-            if (!lend.isReturned()) {
-                lend.getItem().unlinkLend(lend);
-                ItemsContainer.instance().modifyItem(lend.getItem());
-            }
+
+            lend.getItem().unlinkLend(lend);
+            ItemsContainer.instance().modifyItem(lend.getItem());
+
             store.delete(lend);
             lends.remove(lend);
             propertyChangeSupport.firePropertyChange("lends", lend, null);
