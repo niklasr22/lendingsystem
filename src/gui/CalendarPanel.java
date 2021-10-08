@@ -30,7 +30,6 @@ public class CalendarPanel extends JPanel {
     private final User user;
     private final Item item;
     private final int status;
-    private Lend lend;
 
     public CalendarPanel(JDialog dialog, JFrame mainWindow, User user, Item item, int status) {
         super();
